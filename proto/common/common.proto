@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package common;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MyProject273/Join_Love/pb/common";
+
+message AuditFields {
+    google.protobuf.Timestamp created_at = 1;
+    google.protobuf.Timestamp updated_at = 2;
+    google.protobuf.Timestamp deleted_at = 3;
+    string created_by = 4;
+}

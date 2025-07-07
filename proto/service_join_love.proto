@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package joinlove;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "auth/rcp_login.proto";
+
+option go_package = "github.com/MyProject273/Join_Love/pb/joinlove";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        title: "JoinLove API";
+        version: "1.2";
+    };
+};
+
+service JoinLove {
+    rpc Login (auth.LoginRequest) returns (auth.LoginResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/login"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description:"Use this API to verify user email address";
+            summary :"Verify Email";
+        };
+    }
+}

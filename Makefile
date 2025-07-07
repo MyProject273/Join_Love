@@ -36,7 +36,20 @@ new-migration:
 docker-compose:
 	docker-compose --env-file app.env up -d
 
+PROTO_FILES=$(shell find proto -name "*.proto" | grep -v "proto/google" | grep -v "proto/protoc-gen-openapiv2")
+
+proto:
+	rm -rf pb/*
+	rm -rf doc/swagger/*.swagger.json
+	rm -rf doc/statik/*
+	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
+	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
+	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=join_love \
+	$(PROTO_FILES)
+	statik -src=./doc/swagger -dest=./doc
+
 run: 
 	go run main.go
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown migratedown1 migrateforce sqlc docker-compose run
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown migratedown1 migrateforce sqlc docker-compose proto run
