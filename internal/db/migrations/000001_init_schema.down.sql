@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS "message_attachments";
+DROP TABLE IF EXISTS "messages";
+DROP TABLE IF EXISTS "matches";
+DROP TABLE IF EXISTS "likes";
+DROP TABLE IF EXISTS "blocks";
+DROP TABLE IF EXISTS "reports";
+DROP TABLE IF EXISTS "notifications";
+DROP TABLE IF EXISTS "user_activities";
+DROP TABLE IF EXISTS "payments";
+DROP TABLE IF EXISTS "subscriptions";
+DROP TABLE IF EXISTS "privacy_settings";
+DROP TABLE IF EXISTS "photos";
+DROP TABLE IF EXISTS "user_locations";
+DROP TABLE IF EXISTS "user_preferences";
+DROP TABLE IF EXISTS "user_profiles";
+DROP TABLE IF EXISTS "users";
