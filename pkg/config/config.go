@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	DBSource             string        `mapstructure:"DB_SOURCE"`
+	DB_URL               string        `mapstructure:"DB_URL"`
 	MigrationURL         string        `mapstructure:"MIGRATION_URL"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
