@@ -152,8 +152,8 @@ func runGateWayServer(
 		log.Fatal().Err(err).Msg("cannot create statik fs")
 	}
 
-	swaggerHandler := http.StripPrefix("/swagger", http.FileServer(statikFS))
-	mux.Handle("/swagger", swaggerHandler)
+	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
+	mux.Handle("/swagger/", swaggerHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: config.AllowedOrigins,

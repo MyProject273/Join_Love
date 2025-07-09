@@ -37,7 +37,7 @@
         },
         "parameters": [
           {
-            "name": "userName",
+            "name": "email",
             "in": "query",
             "required": false,
             "type": "string"

@@ -24,7 +24,7 @@ const (
 
 type LoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserName      string                 `protobuf:"bytes,1,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -60,9 +60,9 @@ func (*LoginRequest) Descriptor() ([]byte, []int) {
 	return file_auth_rcp_login_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *LoginRequest) GetUserName() string {
+func (x *LoginRequest) GetEmail() string {
 	if x != nil {
-		return x.UserName
+		return x.Email
 	}
 	return ""
 }
@@ -122,9 +122,9 @@ var File_auth_rcp_login_proto protoreflect.FileDescriptor
 
 const file_auth_rcp_login_proto_rawDesc = "" +
 	"\n" +
-	"\x14auth/rcp_login.proto\x12\x04auth\x1a\x0fuser/user.proto\"G\n" +
-	"\fLoginRequest\x12\x1b\n" +
-	"\tuser_name\x18\x01 \x01(\tR\buserName\x12\x1a\n" +
+	"\x14auth/rcp_login.proto\x12\x04auth\x1a\x0fuser/user.proto\"@\n" +
+	"\fLoginRequest\x12\x14\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"/\n" +
 	"\rLoginResponse\x12\x1e\n" +
 	"\x04user\x18\x01 \x01(\v2\n" +
