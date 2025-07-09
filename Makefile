@@ -42,12 +42,15 @@ proto:
 	rm -rf pb/*
 	rm -rf doc/swagger/*.swagger.json
 	rm -rf doc/statik/*
-	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
-	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
-	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
-	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=join_love \
-	$(PROTO_FILES)
-	statik -src=./doc/swagger -dest=./doc
+
+	protoc --proto_path=proto \
+		--go_out=pb --go_opt=paths=source_relative \
+		--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+		--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
+		--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=join_love \
+		$(PROTO_FILES)
+	test -s doc/swagger/join_love.swagger.json
+	statik -src=./doc/swagger -dest=./doc -p statik
 
 evans:
 	evans --host localhost --port 9090 -r repl
