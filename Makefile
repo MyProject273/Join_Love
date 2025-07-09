@@ -49,7 +49,10 @@ proto:
 	$(PROTO_FILES)
 	statik -src=./doc/swagger -dest=./doc
 
-run: 
-	go run main.go
+evans:
+	evans --host localhost --port 9090 -r repl
 
-.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown migratedown1 migrateforce sqlc docker-compose proto run
+run: 
+	go run cmd/main.go
+
+.PHONY: postgres createdb dropdb migrateup migrateup1 migratedown migratedown migratedown1 migrateforce sqlc docker-compose proto evans run
