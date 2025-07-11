@@ -2,15 +2,27 @@ syntax = "proto3";
 
 package auth;
 
+import "validate/validate.proto";
 import "user/user.proto";
 
-option go_package= "github.com/MyProject273/Join_Love/pb/auth";
+option go_package = "github.com/MyProject273/Join_Love/pb/auth";
 
 message LoginRequest {
-    string email = 1;
-    string password = 2;
+  string email = 1 [
+    (validate.rules).string = {
+      email: true,
+      max_len: 100
+    }
+  ];
+
+  string password = 2 [
+    (validate.rules).string = {
+      min_len: 6,
+      max_len: 50
+    }
+  ];
 }
 
 message LoginResponse {
-    user.User user = 1;
+  user.User user = 1;
 }

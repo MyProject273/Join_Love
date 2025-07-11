@@ -1,4 +1,4 @@
-package gapi
+package helper
 
 import (
 	"context"
@@ -13,7 +13,7 @@ type Metadata struct {
 	ClientIP  string
 }
 
-func (server *Server) extractMetadata(ctx context.Context) *Metadata {
+func ExtractMetadata(ctx context.Context) *Metadata {
 	mtdt := &Metadata{}
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		if userAgent := md.Get(consts.GrpcGatewayUserAgentHeader); len(userAgent) > 0 {

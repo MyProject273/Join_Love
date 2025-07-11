@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "JoinLove API",
+    "title": "JoinLove Auth API",
     "version": "1.2"
   },
   "tags": [
     {
-      "name": "JoinLove"
+      "name": "AuthService"
     }
   ],
   "consumes": [
@@ -18,9 +18,9 @@
   "paths": {
     "/api/v1/login": {
       "post": {
-        "summary": "Verify Email",
-        "description": "Use this API to verify user email address",
-        "operationId": "JoinLove_Login",
+        "summary": "User Login",
+        "description": "Authenticate a user using email and password. Returns an access token and refresh token upon successful login.",
+        "operationId": "AuthService_Login",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -50,7 +50,7 @@
           }
         ],
         "tags": [
-          "JoinLove"
+          "AuthService"
         ]
       }
     }

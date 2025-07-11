@@ -3,6 +3,7 @@ module github.com/MyProject273/Join_Love
 go 1.24.4
 
 require (
+	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/rakyll/statik v0.1.7

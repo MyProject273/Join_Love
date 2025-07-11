@@ -11,9 +11,9 @@ import (
 	"time"
 
 	_ "github.com/MyProject273/Join_Love/doc/statik"
-	"github.com/MyProject273/Join_Love/gapi"
+	"github.com/MyProject273/Join_Love/gapi/helper"
+	v1 "github.com/MyProject273/Join_Love/gapi/v1"
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
-	pb "github.com/MyProject273/Join_Love/pb"
 	"github.com/MyProject273/Join_Love/pkg/config"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -81,17 +81,14 @@ func runGrpcServer(
 	store db.Store,
 	waitGroup *errgroup.Group,
 ) {
-	server, err := gapi.NewServer(config, store)
+	server, err := v1.NewServer(config, store)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create grpc server")
 	}
 
-	grpcLogger := grpc.UnaryInterceptor(gapi.GrpcLogger)
-	grpcServer := grpc.NewServer(grpcLogger)
-
-	pb.RegisterJoinLoveServer(grpcServer, server)
-	log.Info().Msgf("registered grpc services: %+v", grpcServer.GetServiceInfo())
-	reflection.Register(grpcServer)
+	v1.NewServer(config, store)
+	log.Info().Msgf("registered grpc services: %+v", server.GRPCServer.GetServiceInfo())
+	reflection.Register(server.GRPCServer)
 
 	listener, err := net.Listen("tcp", config.GrpcServerAddress)
 	if err != nil {
@@ -100,7 +97,7 @@ func runGrpcServer(
 
 	waitGroup.Go(func() error {
 		log.Info().Msgf("gRPC server running at %s", config.GrpcServerAddress)
-		err := grpcServer.Serve(listener)
+		err := server.GRPCServer.Serve(listener)
 		if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 			log.Error().Err(err).Msg("gRPC server failed")
 			return err
@@ -111,7 +108,7 @@ func runGrpcServer(
 	waitGroup.Go(func() error {
 		<-ctx.Done()
 		log.Info().Msg("Shutting down gRPC server")
-		grpcServer.GracefulStop()
+		server.GRPCServer.GracefulStop()
 		log.Info().Msg("gRPC server stopped")
 		return nil
 	})
@@ -123,11 +120,6 @@ func runGateWayServer(
 	store db.Store,
 	waitGroup *errgroup.Group,
 ) {
-	server, err := gapi.NewServer(config, store)
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to create grpc gateway server")
-	}
-
 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 		MarshalOptions: protojson.MarshalOptions{
 			UseProtoNames: true,
@@ -139,7 +131,7 @@ func runGateWayServer(
 
 	grpcMux := runtime.NewServeMux(jsonOption)
 
-	err = pb.RegisterJoinLoveHandlerServer(ctx, grpcMux, server)
+	err := v1.RegisterAllHandlers(ctx, grpcMux, config, store)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot register handler server")
 	}
@@ -171,7 +163,7 @@ func runGateWayServer(
 		},
 		AllowCredentials: true,
 	})
-	handler := c.Handler(gapi.HttpLogger(mux))
+	handler := c.Handler(helper.HttpLogger(mux))
 
 	httpServer := &http.Server{
 		Handler: handler,

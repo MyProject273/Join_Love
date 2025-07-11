@@ -1,4 +1,4 @@
-package gapi
+package helper
 
 import (
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
@@ -8,7 +8,7 @@ import (
 
 func FieldViolation(field string, err error) *errdetails.BadRequest_FieldViolation {
 	return &errdetails.BadRequest_FieldViolation{
-		Field: field,
+		Field:       field,
 		Description: err.Error(),
 	}
 }

@@ -8,6 +8,7 @@ package auth
 
 import (
 	user "github.com/MyProject273/Join_Love/pb/user"
+	_ "github.com/MyProject273/Join_Love/pb/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -122,10 +123,10 @@ var File_auth_rcp_login_proto protoreflect.FileDescriptor
 
 const file_auth_rcp_login_proto_rawDesc = "" +
 	"\n" +
-	"\x14auth/rcp_login.proto\x12\x04auth\x1a\x0fuser/user.proto\"@\n" +
-	"\fLoginRequest\x12\x14\n" +
-	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"/\n" +
+	"\x14auth/rcp_login.proto\x12\x04auth\x1a\x17validate/validate.proto\x1a\x0fuser/user.proto\"V\n" +
+	"\fLoginRequest\x12\x1f\n" +
+	"\x05email\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x18d`\x01R\x05email\x12%\n" +
+	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x182R\bpassword\"/\n" +
 	"\rLoginResponse\x12\x1e\n" +
 	"\x04user\x18\x01 \x01(\v2\n" +
 	".user.UserR\x04userB+Z)github.com/MyProject273/Join_Love/pb/authb\x06proto3"
