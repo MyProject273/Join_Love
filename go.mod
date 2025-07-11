@@ -3,13 +3,15 @@ module github.com/MyProject273/Join_Love
 go 1.24.4
 
 require (
-	github.com/envoyproxy/protoc-gen-validate v1.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/rakyll/statik v0.1.7
 	github.com/rs/cors v1.11.1
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/viper v1.20.1
+	golang.org/x/crypto v0.37.0
 	golang.org/x/sync v0.15.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822
@@ -34,7 +36,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
