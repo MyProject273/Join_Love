@@ -4,6 +4,8 @@ package auth;
 
 import "validate/validate.proto";
 import "user/user.proto";
+import "google/protobuf/timestamp.proto";
+
 
 option go_package = "github.com/MyProject273/Join_Love/pb/auth";
 
@@ -25,4 +27,9 @@ message LoginRequest {
 
 message LoginResponse {
   user.User user = 1;
+  string AccessToken = 2;
+  string RefreshToken = 3;
+  google.protobuf.Timestamp access_token_expires_at = 4;
+  google.protobuf.Timestamp refresh_token_expires_at = 5;
 }
+

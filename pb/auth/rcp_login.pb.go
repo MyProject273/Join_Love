@@ -11,6 +11,7 @@ import (
 	_ "github.com/MyProject273/Join_Love/pb/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -76,10 +77,14 @@ func (x *LoginRequest) GetPassword() string {
 }
 
 type LoginResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *user.User             `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	User                  *user.User             `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	AccessToken           string                 `protobuf:"bytes,2,opt,name=AccessToken,proto3" json:"AccessToken,omitempty"`
+	RefreshToken          string                 `protobuf:"bytes,3,opt,name=RefreshToken,proto3" json:"RefreshToken,omitempty"`
+	AccessTokenExpiresAt  *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=access_token_expires_at,json=accessTokenExpiresAt,proto3" json:"access_token_expires_at,omitempty"`
+	RefreshTokenExpiresAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=refresh_token_expires_at,json=refreshTokenExpiresAt,proto3" json:"refresh_token_expires_at,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *LoginResponse) Reset() {
@@ -119,17 +124,49 @@ func (x *LoginResponse) GetUser() *user.User {
 	return nil
 }
 
+func (x *LoginResponse) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *LoginResponse) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
+}
+
+func (x *LoginResponse) GetAccessTokenExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.AccessTokenExpiresAt
+	}
+	return nil
+}
+
+func (x *LoginResponse) GetRefreshTokenExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.RefreshTokenExpiresAt
+	}
+	return nil
+}
+
 var File_auth_rcp_login_proto protoreflect.FileDescriptor
 
 const file_auth_rcp_login_proto_rawDesc = "" +
 	"\n" +
-	"\x14auth/rcp_login.proto\x12\x04auth\x1a\x17validate/validate.proto\x1a\x0fuser/user.proto\"V\n" +
+	"\x14auth/rcp_login.proto\x12\x04auth\x1a\x17validate/validate.proto\x1a\x0fuser/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"V\n" +
 	"\fLoginRequest\x12\x1f\n" +
 	"\x05email\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x18d`\x01R\x05email\x12%\n" +
-	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x182R\bpassword\"/\n" +
+	"\bpassword\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x06\x182R\bpassword\"\x9d\x02\n" +
 	"\rLoginResponse\x12\x1e\n" +
 	"\x04user\x18\x01 \x01(\v2\n" +
-	".user.UserR\x04userB+Z)github.com/MyProject273/Join_Love/pb/authb\x06proto3"
+	".user.UserR\x04user\x12 \n" +
+	"\vAccessToken\x18\x02 \x01(\tR\vAccessToken\x12\"\n" +
+	"\fRefreshToken\x18\x03 \x01(\tR\fRefreshToken\x12Q\n" +
+	"\x17access_token_expires_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x14accessTokenExpiresAt\x12S\n" +
+	"\x18refresh_token_expires_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x15refreshTokenExpiresAtB+Z)github.com/MyProject273/Join_Love/pb/authb\x06proto3"
 
 var (
 	file_auth_rcp_login_proto_rawDescOnce sync.Once
@@ -145,17 +182,20 @@ func file_auth_rcp_login_proto_rawDescGZIP() []byte {
 
 var file_auth_rcp_login_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_auth_rcp_login_proto_goTypes = []any{
-	(*LoginRequest)(nil),  // 0: auth.LoginRequest
-	(*LoginResponse)(nil), // 1: auth.LoginResponse
-	(*user.User)(nil),     // 2: user.User
+	(*LoginRequest)(nil),          // 0: auth.LoginRequest
+	(*LoginResponse)(nil),         // 1: auth.LoginResponse
+	(*user.User)(nil),             // 2: user.User
+	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
 }
 var file_auth_rcp_login_proto_depIdxs = []int32{
 	2, // 0: auth.LoginResponse.user:type_name -> user.User
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	3, // 1: auth.LoginResponse.access_token_expires_at:type_name -> google.protobuf.Timestamp
+	3, // 2: auth.LoginResponse.refresh_token_expires_at:type_name -> google.protobuf.Timestamp
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_auth_rcp_login_proto_init() }

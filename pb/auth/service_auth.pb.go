@@ -26,10 +26,10 @@ var File_auth_service_auth_proto protoreflect.FileDescriptor
 
 const file_auth_service_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x17auth/service_auth.proto\x12\x04auth\x1a\x1cgoogle/api/annotations.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a\x14auth/rcp_login.proto2\xd7\x01\n" +
-	"\vAuthService\x12\xc7\x01\n" +
-	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\"\x94\x01\x92A|\x12\n" +
-	"User Login\x1anAuthenticate a user using email and password. Returns an access token and refresh token upon successful login.\x82\xd3\xe4\x93\x02\x0f\"\r/api/v1/loginBH\x92A\x1a\x12\x18\n" +
+	"\x17auth/service_auth.proto\x12\x04auth\x1a\x1cgoogle/api/annotations.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a\x14auth/rcp_login.proto2\xda\x01\n" +
+	"\vAuthService\x12\xca\x01\n" +
+	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\"\x97\x01\x92A|\x12\n" +
+	"User Login\x1anAuthenticate a user using email and password. Returns an access token and refresh token upon successful login.\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/api/v1/loginBH\x92A\x1a\x12\x18\n" +
 	"\x11JoinLove Auth API2\x031.2Z)github.com/MyProject273/Join_Love/pb/authb\x06proto3"
 
 var file_auth_service_auth_proto_goTypes = []any{
