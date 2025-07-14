@@ -14,6 +14,7 @@ import (
 	v1 "github.com/MyProject273/Join_Love/gapi/v1"
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
 	"github.com/MyProject273/Join_Love/pkg/config"
+	"github.com/MyProject273/Join_Love/pkg/i18n"
 	logg "github.com/MyProject273/Join_Love/pkg/logger"
 	"github.com/MyProject273/Join_Love/pkg/utils/token"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -76,6 +77,10 @@ func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, toke
 
 	store = db.NewStore(connPool)
 
+	if err := i18n.LoadI18nMessages("pkg/i18n"); err != nil {
+		log.Fatal().Err(err).Msg("failed to load i18n")
+	}
+
 	return
 }
 
@@ -137,7 +142,10 @@ func runGateWayServer(
 		},
 	})
 
-	grpcMux := runtime.NewServeMux(jsonOption)
+	// Custom header matcher allow accept-language
+	headerMatcher := runtime.WithIncomingHeaderMatcher(helper.CustomMatcher)
+
+	grpcMux := runtime.NewServeMux(jsonOption, headerMatcher)
 
 	err := v1.RegisterAllHandlers(ctx, grpcMux, config, store, tokenMaker, logger)
 	if err != nil {

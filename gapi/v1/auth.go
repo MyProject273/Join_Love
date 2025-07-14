@@ -9,6 +9,7 @@ import (
 	"github.com/MyProject273/Join_Love/pb/auth"
 	"github.com/MyProject273/Join_Love/pkg/config"
 	consts "github.com/MyProject273/Join_Love/pkg/const"
+	"github.com/MyProject273/Join_Love/pkg/i18n"
 	"github.com/MyProject273/Join_Love/pkg/utils"
 	"github.com/MyProject273/Join_Love/pkg/utils/token"
 	"github.com/jackc/pgx/v5"
@@ -36,6 +37,7 @@ func NewAuthServer(config config.Config, store db.Store, tokenMaker token.Maker,
 }
 
 func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (res *auth.LoginResponse, err error) {
+
 	if err := helper.ValidateAll(req); err != nil {
 		a.logger.Warn().Err(err).Str("email", req.GetEmail()).Msg("invalid login request")
 		return nil, err
@@ -90,6 +92,7 @@ func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (res *au
 }
 
 func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth.SignupResponse, error) {
+	lang := helper.ExtractMetadata(ctx).Lang
 	if err := helper.ValidateAll(req); err != nil {
 		a.logger.Warn().Err(err).Str("email", req.GetEmail()).Msg("invalid signup request")
 		return nil, err
@@ -122,7 +125,7 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 		if db.ErrorCode(err) == consts.UniqueViolation {
 			switch db.ErrorConstraint(err) {
 			case "users_user_name_key":
-				return nil, status.Errorf(codes.AlreadyExists, "user name already exists")
+				return nil, status.Errorf(codes.AlreadyExists, "%s", i18n.GetI18nMessage("users_user_name_key", lang))
 
 			case "users_email_key":
 				return nil, status.Errorf(codes.AlreadyExists, "email already exists")

@@ -5,6 +5,7 @@ const (
 	GrpcGatewayUserAgentHeader = "grpcgateway-user-agent"
 	UserAgentHeader            = "user-agent"
 	XForwardedForHeader        = "x-forarded-for"
+	AcceptLanguage             = "accept-language"
 
 	// Token
 	TokenTypeAccessToken  = 1
