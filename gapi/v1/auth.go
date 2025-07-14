@@ -114,13 +114,18 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 		return nil, status.Errorf(codes.Internal, "failed to hash password")
 	}
 
-	arg := db.CreateUserParams{
-		Email:        req.GetEmail(),
-		PasswordHash: hashedPassword,
-		UserName:     req.GetUserName(),
+	arg := db.CreateUserTxParams{
+		CreateUserParams: db.CreateUserParams{
+			Email:        req.GetEmail(),
+			PasswordHash: hashedPassword,
+			UserName:     req.GetUserName(),
+		},
+		AfterCreate: func(user db.User) error {
+			return nil
+		},
 	}
 
-	result, err := a.store.CreateUser(ctx, arg)
+	result, err := a.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		if db.ErrorCode(err) == consts.UniqueViolation {
 			switch db.ErrorConstraint(err) {
@@ -139,9 +144,9 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 		return nil, status.Errorf(codes.Internal, "failed to create user")
 	}
 
-	a.logger.Info().Str("user_id", result.ID.String()).Msg("user signed up successfully")
+	a.logger.Info().Str("user_id", result.User.ID.String()).Msg("user signed up successfully")
 
 	return &auth.SignupResponse{
-		User: helper.ConvertUser(&result),
+		User: helper.ConvertUser(&result.User),
 	}, nil
 }
