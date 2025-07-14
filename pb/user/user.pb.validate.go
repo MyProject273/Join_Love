@@ -62,15 +62,9 @@ func (m *User) validate(all bool) error {
 
 	// no validation rules for Email
 
-	// no validation rules for Phone
-
 	// no validation rules for PasswordHash
 
 	// no validation rules for Role
-
-	// no validation rules for FullName
-
-	// no validation rules for Gender
 
 	if all {
 		switch v := interface{}(m.GetBirthdate()).(type) {
@@ -100,10 +94,6 @@ func (m *User) validate(all bool) error {
 			}
 		}
 	}
-
-	// no validation rules for AvatarUrl
-
-	// no validation rules for Bio
 
 	// no validation rules for IsActive
 
@@ -165,6 +155,26 @@ func (m *User) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	if m.Phone != nil {
+		// no validation rules for Phone
+	}
+
+	if m.FullName != nil {
+		// no validation rules for FullName
+	}
+
+	if m.Gender != nil {
+		// no validation rules for Gender
+	}
+
+	if m.AvatarUrl != nil {
+		// no validation rules for AvatarUrl
+	}
+
+	if m.Bio != nil {
+		// no validation rules for Bio
 	}
 
 	if len(errors) > 0 {

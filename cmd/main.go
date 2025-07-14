@@ -8,13 +8,14 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	_ "github.com/MyProject273/Join_Love/doc/statik"
 	"github.com/MyProject273/Join_Love/gapi/helper"
 	v1 "github.com/MyProject273/Join_Love/gapi/v1"
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
 	"github.com/MyProject273/Join_Love/pkg/config"
+	logg "github.com/MyProject273/Join_Love/pkg/logger"
+	"github.com/MyProject273/Join_Love/pkg/utils/token"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rakyll/statik/fs"
@@ -37,11 +38,11 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
 	defer stop()
 
-	config, store := initializeApp(ctx)
+	config, store, tokenMaker, logger := initializeApp(ctx)
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
-	runGrpcServer(ctx, config, store, waitGroup)
-	runGateWayServer(ctx, config, store, waitGroup)
+	runGrpcServer(ctx, config, store, waitGroup, tokenMaker, logger)
+	runGateWayServer(ctx, config, store, waitGroup, tokenMaker, logger)
 	if err := waitGroup.Wait(); err != nil {
 		log.Error().Err(err).Msg("application exited with error")
 	} else {
@@ -50,16 +51,14 @@ func main() {
 
 }
 
-func initializeApp(ctx context.Context) (cfg config.Config, store db.Store) {
+func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, tokenMaker token.Maker, logger zerolog.Logger) {
 	var err error
 	cfg, err = config.LoadConfig(".")
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to load config")
 	}
 
-	if cfg.Environment == "dev" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
-	}
+	logger = logg.NewLogger(cfg.Environment)
 
 	connPool, err := pgxpool.New(ctx, cfg.DB_URL)
 	if err != nil {
@@ -68,6 +67,11 @@ func initializeApp(ctx context.Context) (cfg config.Config, store db.Store) {
 
 	if err := connPool.Ping(ctx); err != nil {
 		log.Fatal().Err(err).Msg("database not reachable")
+	}
+
+	tokenMaker, err = token.NewJWTMaker(cfg.TokenSymmetricKey)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to create token maker")
 	}
 
 	store = db.NewStore(connPool)
@@ -80,13 +84,14 @@ func runGrpcServer(
 	config config.Config,
 	store db.Store,
 	waitGroup *errgroup.Group,
+	tokenMaker token.Maker,
+	logger zerolog.Logger,
 ) {
-	server, err := v1.NewServer(config, store)
+	server, err := v1.NewServer(config, store, tokenMaker, logger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create grpc server")
 	}
 
-	v1.NewServer(config, store)
 	log.Info().Msgf("registered grpc services: %+v", server.GRPCServer.GetServiceInfo())
 	reflection.Register(server.GRPCServer)
 
@@ -119,10 +124,13 @@ func runGateWayServer(
 	config config.Config,
 	store db.Store,
 	waitGroup *errgroup.Group,
+	tokenMaker token.Maker,
+	logger zerolog.Logger,
 ) {
 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 		MarshalOptions: protojson.MarshalOptions{
-			UseProtoNames: true,
+			UseProtoNames:   true,
+			EmitUnpopulated: true,
 		},
 		UnmarshalOptions: protojson.UnmarshalOptions{
 			DiscardUnknown: true,
@@ -131,7 +139,7 @@ func runGateWayServer(
 
 	grpcMux := runtime.NewServeMux(jsonOption)
 
-	err := v1.RegisterAllHandlers(ctx, grpcMux, config, store)
+	err := v1.RegisterAllHandlers(ctx, grpcMux, config, store, tokenMaker, logger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot register handler server")
 	}

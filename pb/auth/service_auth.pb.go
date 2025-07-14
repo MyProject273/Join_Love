@@ -26,21 +26,26 @@ var File_auth_service_auth_proto protoreflect.FileDescriptor
 
 const file_auth_service_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x17auth/service_auth.proto\x12\x04auth\x1a\x1cgoogle/api/annotations.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a\x14auth/rcp_login.proto2\xda\x01\n" +
+	"\x17auth/service_auth.proto\x12\x04auth\x1a\x1cgoogle/api/annotations.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\x1a\x14auth/rcp_login.proto\x1a\x15auth/rcp_signup.proto2\xba\x02\n" +
 	"\vAuthService\x12\xca\x01\n" +
 	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\"\x97\x01\x92A|\x12\n" +
-	"User Login\x1anAuthenticate a user using email and password. Returns an access token and refresh token upon successful login.\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/api/v1/loginBH\x92A\x1a\x12\x18\n" +
+	"User Login\x1anAuthenticate a user using email and password. Returns an access token and refresh token upon successful login.\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/api/v1/login\x12^\n" +
+	"\x06Signup\x12\x13.auth.SignupRequest\x1a\x14.auth.SignupResponse\")\x92A\r\x12\vSignup User\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/api/v1/signupBH\x92A\x1a\x12\x18\n" +
 	"\x11JoinLove Auth API2\x031.2Z)github.com/MyProject273/Join_Love/pb/authb\x06proto3"
 
 var file_auth_service_auth_proto_goTypes = []any{
-	(*LoginRequest)(nil),  // 0: auth.LoginRequest
-	(*LoginResponse)(nil), // 1: auth.LoginResponse
+	(*LoginRequest)(nil),   // 0: auth.LoginRequest
+	(*SignupRequest)(nil),  // 1: auth.SignupRequest
+	(*LoginResponse)(nil),  // 2: auth.LoginResponse
+	(*SignupResponse)(nil), // 3: auth.SignupResponse
 }
 var file_auth_service_auth_proto_depIdxs = []int32{
 	0, // 0: auth.AuthService.Login:input_type -> auth.LoginRequest
-	1, // 1: auth.AuthService.Login:output_type -> auth.LoginResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	1, // 1: auth.AuthService.Signup:input_type -> auth.SignupRequest
+	2, // 2: auth.AuthService.Login:output_type -> auth.LoginResponse
+	3, // 3: auth.AuthService.Signup:output_type -> auth.SignupResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -52,6 +57,7 @@ func file_auth_service_auth_proto_init() {
 		return
 	}
 	file_auth_rcp_login_proto_init()
+	file_auth_rcp_signup_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -9,4 +9,8 @@ const (
 	// Token
 	TokenTypeAccessToken  = 1
 	TokenTypeRefreshToken = 2
+
+	// Error code sqlc
+	ForeignKeyViolation = "23503"
+	UniqueViolation     = "23505"
 )

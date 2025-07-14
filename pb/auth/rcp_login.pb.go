@@ -79,8 +79,8 @@ func (x *LoginRequest) GetPassword() string {
 type LoginResponse struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	User                  *user.User             `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	AccessToken           string                 `protobuf:"bytes,2,opt,name=AccessToken,proto3" json:"AccessToken,omitempty"`
-	RefreshToken          string                 `protobuf:"bytes,3,opt,name=RefreshToken,proto3" json:"RefreshToken,omitempty"`
+	AccessToken           string                 `protobuf:"bytes,2,opt,name=accessToken,proto3" json:"accessToken,omitempty"`
+	RefreshToken          string                 `protobuf:"bytes,3,opt,name=refreshToken,proto3" json:"refreshToken,omitempty"`
 	AccessTokenExpiresAt  *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=access_token_expires_at,json=accessTokenExpiresAt,proto3" json:"access_token_expires_at,omitempty"`
 	RefreshTokenExpiresAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=refresh_token_expires_at,json=refreshTokenExpiresAt,proto3" json:"refresh_token_expires_at,omitempty"`
 	unknownFields         protoimpl.UnknownFields
@@ -163,8 +163,8 @@ const file_auth_rcp_login_proto_rawDesc = "" +
 	"\rLoginResponse\x12\x1e\n" +
 	"\x04user\x18\x01 \x01(\v2\n" +
 	".user.UserR\x04user\x12 \n" +
-	"\vAccessToken\x18\x02 \x01(\tR\vAccessToken\x12\"\n" +
-	"\fRefreshToken\x18\x03 \x01(\tR\fRefreshToken\x12Q\n" +
+	"\vaccessToken\x18\x02 \x01(\tR\vaccessToken\x12\"\n" +
+	"\frefreshToken\x18\x03 \x01(\tR\frefreshToken\x12Q\n" +
 	"\x17access_token_expires_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x14accessTokenExpiresAt\x12S\n" +
 	"\x18refresh_token_expires_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x15refreshTokenExpiresAtB+Z)github.com/MyProject273/Join_Love/pb/authb\x06proto3"
 

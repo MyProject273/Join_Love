@@ -3,19 +3,15 @@ package db
 import (
 	"errors"
 
+	consts "github.com/MyProject273/Join_Love/pkg/const"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-)
-
-const (
-	ForeignKeyViolation = "23503"
-	UniqueViolation     = "23505"
 )
 
 var ErrRecordNotFound = pgx.ErrNoRows
 
 var ErrUniqueViolation = &pgconn.PgError{
-	Code: UniqueViolation,
+	Code: consts.UniqueViolation,
 }
 
 func ErrorCode(err error) string {
@@ -24,4 +20,12 @@ func ErrorCode(err error) string {
 		return pgErr.Code
 	}
 	return ""
+}
+
+func ErrorConstraint(err error) string {
+	pgErr, ok := err.(*pgconn.PgError)
+	if !ok {
+		return ""
+	}
+	return pgErr.ConstraintName
 }

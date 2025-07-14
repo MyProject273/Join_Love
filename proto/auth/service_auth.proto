@@ -4,6 +4,7 @@ package auth;
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "auth/rcp_login.proto";
+import "auth/rcp_signup.proto";
 
 option go_package = "github.com/MyProject273/Join_Love/pb/auth";
 
@@ -23,6 +24,17 @@ service AuthService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
      summary: "User Login";
      description: "Authenticate a user using email and password. Returns an access token and refresh token upon successful login.";
+    };
+  }
+
+  rpc Signup (SignupRequest) returns (SignupResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/signup"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Signup User";
+      description: ""
     };
   }
 }

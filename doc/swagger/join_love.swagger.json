@@ -49,6 +49,39 @@
           "AuthService"
         ]
       }
+    },
+    "/api/v1/signup": {
+      "post": {
+        "summary": "Signup User",
+        "operationId": "AuthService_Signup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authSignupResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authSignupRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -69,10 +102,10 @@
         "user": {
           "$ref": "#/definitions/userUser"
         },
-        "AccessToken": {
+        "accessToken": {
           "type": "string"
         },
-        "RefreshToken": {
+        "refreshToken": {
           "type": "string"
         },
         "accessTokenExpiresAt": {
@@ -82,6 +115,28 @@
         "refreshTokenExpiresAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "authSignupRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        }
+      }
+    },
+    "authSignupResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/userUser"
         }
       }
     },
