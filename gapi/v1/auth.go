@@ -36,32 +36,34 @@ func NewAuthServer(config config.Config, store db.Store, tokenMaker token.Maker,
 	}
 }
 
-func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (res *auth.LoginResponse, err error) {
+func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (*auth.LoginResponse, error) {
+	lang := helper.ExtractMetadata(ctx).Lang
 
 	if err := helper.ValidateAll(req); err != nil {
 		a.logger.Warn().Err(err).Str("email", req.GetEmail()).Msg("invalid login request")
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err.Error())
 	}
 
 	user, err := a.store.GetUserByEmail(ctx, req.GetEmail())
 	if err != nil {
 		if errors.Is(err, db.ErrRecordNotFound) {
 			a.logger.Info().Str("email", req.GetEmail()).Msg("user not found")
-			return nil, status.Errorf(codes.NotFound, "user not found")
+			return nil, status.Errorf(codes.NotFound, "%s", i18n.GetI18nMessage("user_not_found", lang))
 		}
+
 		a.logger.Error().Err(err).Str("email", req.GetEmail()).Msg("failed to get user by email")
-		return nil, status.Errorf(codes.Internal, "failed to find user")
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	if err := utils.CheckPassword(req.Password, user.PasswordHash); err != nil {
 		a.logger.Info().Str("email", req.GetEmail()).Msg("incorrect password")
-		return nil, status.Errorf(codes.NotFound, "incorrect password")
+		return nil, status.Errorf(codes.NotFound, "%s", i18n.GetI18nMessage("incorrect_password", lang))
 	}
 
 	userID, err := utils.PgUUIDToString(user.ID)
 	if err != nil {
 		a.logger.Error().Err(err).Msg("failed to convert UUID to string")
-		return nil, status.Errorf(codes.Internal, "failed to convert UUID to string")
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	accessToken, accessPayload, err := a.tokenMaker.CreateToken(
@@ -69,7 +71,7 @@ func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (res *au
 	)
 	if err != nil {
 		a.logger.Error().Err(err).Str("user_id", userID).Msg("failed to create access token")
-		return nil, status.Errorf(codes.Internal, "failed to create access token")
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	refreshToken, refreshPayload, err := a.tokenMaker.CreateToken(
@@ -77,7 +79,7 @@ func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (res *au
 	)
 	if err != nil {
 		a.logger.Error().Err(err).Str("user_id", userID).Msg("failed to create refresh token")
-		return nil, status.Errorf(codes.Internal, "failed to create refresh token")
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	a.logger.Info().Str("user_id", userID).Msg("user logged in successfully")
@@ -93,25 +95,24 @@ func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (res *au
 
 func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth.SignupResponse, error) {
 	lang := helper.ExtractMetadata(ctx).Lang
+
 	if err := helper.ValidateAll(req); err != nil {
 		a.logger.Warn().Err(err).Str("email", req.GetEmail()).Msg("invalid signup request")
-		return nil, err
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err.Error())
 	}
 
-	_, err := a.store.GetUserByEmail(ctx, req.GetEmail())
-	if err != nil && err != pgx.ErrNoRows {
-		a.logger.Error().Err(err).Str("email", req.GetEmail()).Msg("failed to check existing user")
-		return nil, status.Errorf(codes.Internal, "failed to get user by email")
-	}
-	if err == nil {
+	if _, err := a.store.GetUserByEmail(ctx, req.GetEmail()); err == nil {
 		a.logger.Info().Str("email", req.GetEmail()).Msg("user already exists")
-		return nil, status.Errorf(codes.AlreadyExists, "user already exists")
+		return nil, status.Errorf(codes.AlreadyExists, "%s", i18n.GetI18nMessage("user_already_exists", lang))
+	} else if err != pgx.ErrNoRows {
+		a.logger.Error().Err(err).Str("email", req.GetEmail()).Msg("failed to check existing user")
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	hashedPassword, err := utils.HashPassword(req.GetPassword())
 	if err != nil {
 		a.logger.Error().Err(err).Str("email", req.GetEmail()).Msg("failed to hash password")
-		return nil, status.Errorf(codes.Internal, "failed to hash password")
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	arg := db.CreateUserTxParams{
@@ -131,17 +132,15 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 			switch db.ErrorConstraint(err) {
 			case "users_user_name_key":
 				return nil, status.Errorf(codes.AlreadyExists, "%s", i18n.GetI18nMessage("users_user_name_key", lang))
-
 			case "users_email_key":
-				return nil, status.Errorf(codes.AlreadyExists, "email already exists")
-
+				return nil, status.Errorf(codes.AlreadyExists, "%s", i18n.GetI18nMessage("users_email_key", lang))
 			default:
-				return nil, status.Errorf(codes.AlreadyExists, "user already exists")
+				return nil, status.Errorf(codes.AlreadyExists, "%s", i18n.GetI18nMessage("user_already_exists", lang))
 			}
-
 		}
+
 		a.logger.Error().Err(err).Str("email", req.GetEmail()).Msg("failed to create user")
-		return nil, status.Errorf(codes.Internal, "failed to create user")
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	a.logger.Info().Str("user_id", result.User.ID.String()).Msg("user signed up successfully")

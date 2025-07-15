@@ -1,4 +1,12 @@
 {
+  "invalid_request": "Invalid request",
+
+  "user_not_found": "User not found",
+  "user_already_exists": "User already exists",
+  "incorrect_password": "Incorrect password",
+
   "users_email_key": "Email already exists",
-  "users_user_name_key": "Username already exists"
+  "users_user_name_key": "Username already exists",
+
+  "internal_error": "Internal error"
 }
