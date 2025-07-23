@@ -3,10 +3,8 @@
 
   "user_not_found": "Không tìm thấy người dùng",
   "user_already_exists": "Người dùng đã tồn tại",
-  "failed_find_user": "Không thể tìm người dùng",
-  "failed_create_user": "Không thể tạo người dùng",
   "incorrect_password": "Mật khẩu không chính xác",
-  "failed_hash_password": "Không thể mã hóa mật khẩu",
+  "verify_email": "Xác thực email thất bại",
 
   "failed_create_access_token": "Không thể tạo access token",
   "failed_create_refresh_token": "Không thể tạo refresh token",

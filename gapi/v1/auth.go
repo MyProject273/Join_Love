@@ -3,16 +3,19 @@ package v1
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/MyProject273/Join_Love/gapi/helper"
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
+	"github.com/MyProject273/Join_Love/internal/worker"
 	"github.com/MyProject273/Join_Love/pb/auth"
 	"github.com/MyProject273/Join_Love/pkg/config"
 	consts "github.com/MyProject273/Join_Love/pkg/const"
 	"github.com/MyProject273/Join_Love/pkg/i18n"
 	"github.com/MyProject273/Join_Love/pkg/utils"
 	"github.com/MyProject273/Join_Love/pkg/utils/token"
-	"github.com/jackc/pgx/v5"
+	"github.com/hibiken/asynq"
+	"github.com/jackc/pgx"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,18 +24,20 @@ import (
 
 type AuthServer struct {
 	auth.UnimplementedAuthServiceServer
-	store      db.Store
-	config     config.Config
-	tokenMaker token.Maker
-	logger     zerolog.Logger
+	store           db.Store
+	config          config.Config
+	tokenMaker      token.Maker
+	logger          zerolog.Logger
+	taskDistributor worker.TaskDistributor
 }
 
-func NewAuthServer(config config.Config, store db.Store, tokenMaker token.Maker, logger zerolog.Logger) *AuthServer {
+func NewAuthServer(config config.Config, store db.Store, tokenMaker token.Maker, logger zerolog.Logger, taskDistributor worker.TaskDistributor) *AuthServer {
 	return &AuthServer{
-		store:      store,
-		config:     config,
-		tokenMaker: tokenMaker,
-		logger:     logger,
+		store:           store,
+		config:          config,
+		tokenMaker:      tokenMaker,
+		logger:          logger,
+		taskDistributor: taskDistributor,
 	}
 }
 
@@ -100,15 +105,15 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 		a.logger.Warn().Err(err).Str("email", req.GetEmail()).Msg("invalid signup request")
 		return nil, status.Errorf(codes.InvalidArgument, "%s", err.Error())
 	}
-
 	if _, err := a.store.GetUserByEmail(ctx, req.GetEmail()); err == nil {
-		a.logger.Info().Str("email", req.GetEmail()).Msg("user already exists")
 		return nil, status.Errorf(codes.AlreadyExists, "%s", i18n.GetI18nMessage("user_already_exists", lang))
-	} else if err != pgx.ErrNoRows {
-		a.logger.Error().Err(err).Str("email", req.GetEmail()).Msg("failed to check existing user")
-		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
+	} else {
+		var pgErr *pgx.PgError
+		if errors.As(err, &pgErr) && pgErr.Message == pgx.ErrNoRows.Error() {
+			a.logger.Error().Err(err).Str("email", req.GetEmail()).Msgf("failed to check existing user (type: %T)", err)
+			return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
+		}
 	}
-
 	hashedPassword, err := utils.HashPassword(req.GetPassword())
 	if err != nil {
 		a.logger.Error().Err(err).Str("email", req.GetEmail()).Msg("failed to hash password")
@@ -122,7 +127,17 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 			UserName:     req.GetUserName(),
 		},
 		AfterCreate: func(user db.User) error {
-			return nil
+			taskPayload := worker.PayloadSendVerifyEmail{
+				Email: user.Email,
+				Lang: lang,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+			return a.taskDistributor.DistributeTaskSendVerifyEmail(ctx, &taskPayload, opts...)
+
 		},
 	}
 
@@ -148,4 +163,26 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 	return &auth.SignupResponse{
 		User: helper.ConvertUser(&result.User),
 	}, nil
+}
+
+func (a *AuthServer) VerifyEmail(ctx context.Context, req *auth.VerifyEmailRequest) (res *auth.VerifyEmailResponse, err error) {
+	lang := helper.ExtractMetadata(ctx).Lang
+
+	if err = helper.ValidateAll(req); err != nil {
+		a.logger.Warn().Err(err).Str("email_id", req.EmailId).Msg("invalid verify email request")
+		return nil, status.Errorf(codes.InvalidArgument, "%s", err.Error())
+	}
+
+	txResult, err := a.store.VerifyEmailTx(ctx, db.VerifyEmailTxParams{
+		EmailId:    req.EmailId,
+		SecretCode: req.SecretCode,
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("verify_email", lang))
+	}
+
+	rsp := &auth.VerifyEmailResponse{
+		IsVerified: txResult.User.IsVerified,
+	}
+	return rsp, nil
 }

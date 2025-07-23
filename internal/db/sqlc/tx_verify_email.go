@@ -1,0 +1,44 @@
+package db
+
+import (
+	"context"
+
+	"github.com/MyProject273/Join_Love/pkg/utils"
+)
+
+type VerifyEmailTxParams struct {
+	EmailId    string
+	SecretCode string
+}
+
+type VerifyEmailTxResult struct {
+	User        User
+	VerifyEmail VerifyEmail
+}
+
+func (store *SQLStore) VerifyEmailTx(ctx context.Context, arg VerifyEmailTxParams) (VerifyEmailTxResult, error) {
+	var result VerifyEmailTxResult
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+		emailId, err := utils.StringToPgUUID(arg.EmailId)
+		if err != nil {
+			return err
+		}
+		result.VerifyEmail, err = q.UpdateVerifyEmail(ctx, UpdateVerifyEmailParams{
+			ID:         emailId,
+			SecretCode: arg.SecretCode,
+		})
+		if err != nil {
+			return err
+		}
+
+		result.User, err = q.UpdateUserVerifiedStatus(ctx, UpdateUserVerifiedStatusParams{
+			ID:         result.VerifyEmail.UserID,
+			IsVerified: true,
+		})
+		return err
+	})
+
+	return result, err
+}

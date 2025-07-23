@@ -4,6 +4,7 @@
   "user_not_found": "User not found",
   "user_already_exists": "User already exists",
   "incorrect_password": "Incorrect password",
+  "verify_email": "Authenication email failed",
 
   "users_email_key": "Email already exists",
   "users_user_name_key": "Username already exists",

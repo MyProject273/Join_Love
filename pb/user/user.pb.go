@@ -29,17 +29,16 @@ type User struct {
 	UserName      string                 `protobuf:"bytes,2,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Phone         *string                `protobuf:"bytes,4,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
-	PasswordHash  string                 `protobuf:"bytes,5,opt,name=password_hash,json=passwordHash,proto3" json:"password_hash,omitempty"`
-	Role          string                 `protobuf:"bytes,6,opt,name=role,proto3" json:"role,omitempty"`
-	FullName      *string                `protobuf:"bytes,7,opt,name=full_name,json=fullName,proto3,oneof" json:"full_name,omitempty"`
-	Gender        *string                `protobuf:"bytes,8,opt,name=gender,proto3,oneof" json:"gender,omitempty"`
-	Birthdate     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=birthdate,proto3" json:"birthdate,omitempty"`
-	AvatarUrl     *string                `protobuf:"bytes,10,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
-	Bio           *string                `protobuf:"bytes,11,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
-	IsActive      bool                   `protobuf:"varint,12,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
-	IsVerified    bool                   `protobuf:"varint,13,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
-	LastLogin     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
-	AuditFields   *common.AuditFields    `protobuf:"bytes,15,opt,name=audit_fields,json=auditFields,proto3" json:"audit_fields,omitempty"`
+	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
+	FullName      *string                `protobuf:"bytes,6,opt,name=full_name,json=fullName,proto3,oneof" json:"full_name,omitempty"`
+	Gender        *string                `protobuf:"bytes,7,opt,name=gender,proto3,oneof" json:"gender,omitempty"`
+	Birthdate     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=birthdate,proto3" json:"birthdate,omitempty"`
+	AvatarUrl     *string                `protobuf:"bytes,9,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
+	Bio           *string                `protobuf:"bytes,10,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
+	IsActive      bool                   `protobuf:"varint,11,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	IsVerified    bool                   `protobuf:"varint,12,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
+	LastLogin     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
+	AuditFields   *common.AuditFields    `protobuf:"bytes,14,opt,name=audit_fields,json=auditFields,proto3" json:"audit_fields,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -98,13 +97,6 @@ func (x *User) GetEmail() string {
 func (x *User) GetPhone() string {
 	if x != nil && x.Phone != nil {
 		return *x.Phone
-	}
-	return ""
-}
-
-func (x *User) GetPasswordHash() string {
-	if x != nil {
-		return x.PasswordHash
 	}
 	return ""
 }
@@ -183,27 +175,26 @@ var File_user_user_proto protoreflect.FileDescriptor
 
 const file_user_user_proto_rawDesc = "" +
 	"\n" +
-	"\x0fuser/user.proto\x12\x04user\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13common/common.proto\"\xbc\x04\n" +
+	"\x0fuser/user.proto\x12\x04user\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13common/common.proto\"\x97\x04\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tuser_name\x18\x02 \x01(\tR\buserName\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x19\n" +
-	"\x05phone\x18\x04 \x01(\tH\x00R\x05phone\x88\x01\x01\x12#\n" +
-	"\rpassword_hash\x18\x05 \x01(\tR\fpasswordHash\x12\x12\n" +
-	"\x04role\x18\x06 \x01(\tR\x04role\x12 \n" +
-	"\tfull_name\x18\a \x01(\tH\x01R\bfullName\x88\x01\x01\x12\x1b\n" +
-	"\x06gender\x18\b \x01(\tH\x02R\x06gender\x88\x01\x01\x128\n" +
-	"\tbirthdate\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tbirthdate\x12\"\n" +
+	"\x05phone\x18\x04 \x01(\tH\x00R\x05phone\x88\x01\x01\x12\x12\n" +
+	"\x04role\x18\x05 \x01(\tR\x04role\x12 \n" +
+	"\tfull_name\x18\x06 \x01(\tH\x01R\bfullName\x88\x01\x01\x12\x1b\n" +
+	"\x06gender\x18\a \x01(\tH\x02R\x06gender\x88\x01\x01\x128\n" +
+	"\tbirthdate\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tbirthdate\x12\"\n" +
 	"\n" +
-	"avatar_url\x18\n" +
-	" \x01(\tH\x03R\tavatarUrl\x88\x01\x01\x12\x15\n" +
-	"\x03bio\x18\v \x01(\tH\x04R\x03bio\x88\x01\x01\x12\x1b\n" +
-	"\tis_active\x18\f \x01(\bR\bisActive\x12\x1f\n" +
-	"\vis_verified\x18\r \x01(\bR\n" +
+	"avatar_url\x18\t \x01(\tH\x03R\tavatarUrl\x88\x01\x01\x12\x15\n" +
+	"\x03bio\x18\n" +
+	" \x01(\tH\x04R\x03bio\x88\x01\x01\x12\x1b\n" +
+	"\tis_active\x18\v \x01(\bR\bisActive\x12\x1f\n" +
+	"\vis_verified\x18\f \x01(\bR\n" +
 	"isVerified\x129\n" +
 	"\n" +
-	"last_login\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tlastLogin\x126\n" +
-	"\faudit_fields\x18\x0f \x01(\v2\x13.common.AuditFieldsR\vauditFieldsB\b\n" +
+	"last_login\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tlastLogin\x126\n" +
+	"\faudit_fields\x18\x0e \x01(\v2\x13.common.AuditFieldsR\vauditFieldsB\b\n" +
 	"\x06_phoneB\f\n" +
 	"\n" +
 	"_full_nameB\t\n" +

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -71,4 +72,25 @@ func PgUUIDToStringSafe(uuid pgtype.UUID) string {
 		return ""
 	}
 	return s
+}
+
+func StringToPgUUID(s string) (pgtype.UUID, error) {
+	parsed, err := uuid.Parse(s)
+	if err != nil {
+		return pgtype.UUID{}, fmt.Errorf("StringToPgUUID: invalid UUID format: %w", err)
+	}
+
+	var pgUUID pgtype.UUID
+	if err := pgUUID.Scan(parsed.String()); err != nil {
+		return pgtype.UUID{}, fmt.Errorf("StringToPgUUID: cannot scan to pgtype.UUID: %w", err)
+	}
+	return pgUUID, nil
+}
+
+func StringToPgUUIDSafe(s string) pgtype.UUID {
+	uuid, err := StringToPgUUID(s)
+	if err != nil {
+		return pgtype.UUID{}
+	}
+	return uuid
 }

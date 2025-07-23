@@ -62,8 +62,6 @@ func (m *User) validate(all bool) error {
 
 	// no validation rules for Email
 
-	// no validation rules for PasswordHash
-
 	// no validation rules for Role
 
 	if all {

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/MyProject273/Join_Love/pb/auth";
+
+
+message VerifyEmailRequest {
+    string email_id = 1;
+    string secret_code = 2;
+}
+
+message VerifyEmailResponse {
+    bool is_verified = 1;
+}

@@ -82,6 +82,44 @@
           "AuthService"
         ]
       }
+    },
+    "/api/v1/verify_email": {
+      "get": {
+        "summary": "Verify Email",
+        "description": "Use this API to verify user email address",
+        "operationId": "AuthService_VerifyEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authVerifyEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "emailId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "secretCode",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -137,6 +175,14 @@
       "properties": {
         "user": {
           "$ref": "#/definitions/userUser"
+        }
+      }
+    },
+    "authVerifyEmailResponse": {
+      "type": "object",
+      "properties": {
+        "isVerified": {
+          "type": "boolean"
         }
       }
     },
@@ -201,9 +247,6 @@
           "type": "string"
         },
         "phone": {
-          "type": "string"
-        },
-        "passwordHash": {
           "type": "string"
         },
         "role": {

@@ -9,6 +9,7 @@ import (
 // Store is defines all functions to execute db queries and transaction
 type Store interface {
 	Querier
+	VerifyEmailTx(ctx context.Context, arg VerifyEmailTxParams) (VerifyEmailTxResult, error)
 	CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResult, error)
 }
 

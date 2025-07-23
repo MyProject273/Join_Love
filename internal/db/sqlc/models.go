@@ -212,3 +212,13 @@ type UserProfile struct {
 	DeletedAt        pgtype.Timestamp `json:"deleted_at"`
 	CreatedBy        pgtype.UUID      `json:"created_by"`
 }
+
+type VerifyEmail struct {
+	ID         pgtype.UUID        `json:"id"`
+	UserID     pgtype.UUID        `json:"user_id"`
+	Email      string             `json:"email"`
+	SecretCode string             `json:"secret_code"`
+	IsUsed     bool               `json:"is_used"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	ExpiredAt  pgtype.Timestamptz `json:"expired_at"`
+}

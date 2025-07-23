@@ -14,4 +14,6 @@ const (
 	// Error code sqlc
 	ForeignKeyViolation = "23503"
 	UniqueViolation     = "23505"
+
+	Alphabet = "abcdefghijklmnopqrstuvwxyz"
 )

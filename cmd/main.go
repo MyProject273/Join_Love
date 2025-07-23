@@ -13,11 +13,14 @@ import (
 	"github.com/MyProject273/Join_Love/gapi/helper"
 	v1 "github.com/MyProject273/Join_Love/gapi/v1"
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
+	"github.com/MyProject273/Join_Love/internal/mail"
+	"github.com/MyProject273/Join_Love/internal/worker"
 	"github.com/MyProject273/Join_Love/pkg/config"
 	"github.com/MyProject273/Join_Love/pkg/i18n"
 	logg "github.com/MyProject273/Join_Love/pkg/logger"
 	"github.com/MyProject273/Join_Love/pkg/utils/token"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
@@ -39,11 +42,15 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
 	defer stop()
 
-	config, store, tokenMaker, logger := initializeApp(ctx)
+	config, store, tokenMaker, logger, redisOpt, taskDistributor := initializeApp(ctx)
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
-	runGrpcServer(ctx, config, store, waitGroup, tokenMaker, logger)
-	runGateWayServer(ctx, config, store, waitGroup, tokenMaker, logger)
+	waitGroup.Go(func() error {
+		return startTaskProcessor(ctx, config, store, redisOpt)
+	})
+
+	runGrpcServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
+	runGateWayServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
 	if err := waitGroup.Wait(); err != nil {
 		log.Error().Err(err).Msg("application exited with error")
 	} else {
@@ -52,7 +59,7 @@ func main() {
 
 }
 
-func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, tokenMaker token.Maker, logger zerolog.Logger) {
+func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, tokenMaker token.Maker, logger zerolog.Logger, redisOpt asynq.RedisClientOpt, taskDistributor worker.TaskDistributor) {
 	var err error
 	cfg, err = config.LoadConfig(".")
 	if err != nil {
@@ -75,6 +82,9 @@ func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, toke
 		log.Fatal().Err(err).Msg("failed to create token maker")
 	}
 
+	redisOpt = asynq.RedisClientOpt{Addr: cfg.RedisAddress}
+	taskDistributor = worker.NewRedisTaskDistributor(redisOpt)
+
 	store = db.NewStore(connPool)
 
 	if err := i18n.LoadI18nMessages("pkg/i18n"); err != nil {
@@ -91,8 +101,9 @@ func runGrpcServer(
 	waitGroup *errgroup.Group,
 	tokenMaker token.Maker,
 	logger zerolog.Logger,
+	taskDistributor worker.TaskDistributor,
 ) {
-	server, err := v1.NewServer(config, store, tokenMaker, logger)
+	server, err := v1.NewServer(config, store, tokenMaker, logger, taskDistributor)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create grpc server")
 	}
@@ -131,6 +142,7 @@ func runGateWayServer(
 	waitGroup *errgroup.Group,
 	tokenMaker token.Maker,
 	logger zerolog.Logger,
+	taskDistributor worker.TaskDistributor,
 ) {
 	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 		MarshalOptions: protojson.MarshalOptions{
@@ -147,7 +159,7 @@ func runGateWayServer(
 
 	grpcMux := runtime.NewServeMux(jsonOption, headerMatcher)
 
-	err := v1.RegisterAllHandlers(ctx, grpcMux, config, store, tokenMaker, logger)
+	err := v1.RegisterAllHandlers(ctx, grpcMux, config, store, tokenMaker, logger, taskDistributor)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot register handler server")
 	}
@@ -211,4 +223,19 @@ func runGateWayServer(
 		log.Info().Msg("HTTP gateway server is stopped")
 		return nil
 	})
+}
+
+func startTaskProcessor(ctx context.Context, config config.Config, store db.Store, redisOpt asynq.RedisClientOpt) error {
+	mailer := mail.NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
+
+	log.Info().Msg("Starting task processor")
+	if err := taskProcessor.Start(); err != nil {
+		log.Fatal().Err(err).Msg("Task processor failed to start")
+	}
+
+	<-ctx.Done()
+	log.Info().Msg("Shutting down task processor")
+	taskProcessor.Shutdown()
+	return nil
 }
