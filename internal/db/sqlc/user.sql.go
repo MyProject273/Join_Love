@@ -274,6 +274,22 @@ func (q *Queries) UpdateUserActiveStatus(ctx context.Context, arg UpdateUserActi
 	return i, err
 }
 
+const updateUserLastLogin = `-- name: UpdateUserLastLogin :exec
+Update users
+SET last_login = $1
+WHERE id = $2
+`
+
+type UpdateUserLastLoginParams struct {
+	LastLogin pgtype.Timestamp `json:"last_login"`
+	ID        pgtype.UUID      `json:"id"`
+}
+
+func (q *Queries) UpdateUserLastLogin(ctx context.Context, arg UpdateUserLastLoginParams) error {
+	_, err := q.db.Exec(ctx, updateUserLastLogin, arg.LastLogin, arg.ID)
+	return err
+}
+
 const updateUserVerifiedStatus = `-- name: UpdateUserVerifiedStatus :one
 UPDATE users
 SET is_verified = $1

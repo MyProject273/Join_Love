@@ -50,3 +50,8 @@ UPDATE users
 SET is_verified = $1
 WHERE id = $2
 RETURNING *;
+
+-- name: UpdateUserLastLogin :exec
+Update users
+SET last_login = $1
+WHERE id = $2;

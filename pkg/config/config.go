@@ -20,6 +20,7 @@ type Config struct {
 	EmailSenderAddress   string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
 	EmailSenderPassword  string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
 	AllowedOrigins       []string      `mapstructure:"ALLOWED_ORIGINS"`
+	AbstractApiKey       string        `mapstructure:"ABSTRACT_API_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

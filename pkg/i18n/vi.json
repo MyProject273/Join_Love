@@ -1,13 +1,11 @@
 {
   "invalid_request": "Yêu cầu không hợp lệ",
+  "invalid_email": "Email không hợp lệ",
 
   "user_not_found": "Không tìm thấy người dùng",
   "user_already_exists": "Người dùng đã tồn tại",
   "incorrect_password": "Mật khẩu không chính xác",
   "verify_email": "Xác thực email thất bại",
-
-  "failed_create_access_token": "Không thể tạo access token",
-  "failed_create_refresh_token": "Không thể tạo refresh token",
 
   "users_email_key": "Email đã tồn tại",
   "users_user_name_key": "Tên người dùng đã tồn tại",

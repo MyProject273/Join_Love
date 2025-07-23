@@ -7,6 +7,7 @@ import (
 
 	"github.com/MyProject273/Join_Love/gapi/helper"
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
+	"github.com/MyProject273/Join_Love/internal/mail"
 	"github.com/MyProject273/Join_Love/internal/worker"
 	"github.com/MyProject273/Join_Love/pb/auth"
 	"github.com/MyProject273/Join_Love/pkg/config"
@@ -16,6 +17,7 @@ import (
 	"github.com/MyProject273/Join_Love/pkg/utils/token"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -87,6 +89,16 @@ func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (*auth.L
 		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
+	err = a.store.UpdateUserLastLogin(ctx, db.UpdateUserLastLoginParams{
+		LastLogin: pgtype.Timestamp{Time: time.Now(), Valid: true},
+		ID:        user.ID,
+	})
+
+	if err != nil {
+		a.logger.Error().Err(err).Str("user_id", userID).Msg("failed to update last login")
+		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
+	}
+
 	a.logger.Info().Str("user_id", userID).Msg("user logged in successfully")
 
 	return &auth.LoginResponse{
@@ -105,6 +117,18 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 		a.logger.Warn().Err(err).Str("email", req.GetEmail()).Msg("invalid signup request")
 		return nil, status.Errorf(codes.InvalidArgument, "%s", err.Error())
 	}
+	verifyEmail, err := mail.ValidateEmailAddress(req.Email, a.config.AbstractApiKey)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "email verify failed: %v", err)
+	}
+	if verifyEmail.Deliverability != "DELIVERABLE" ||
+		!verifyEmail.IsValidFormat.Value ||
+		!verifyEmail.IsMxFound.Value ||
+		!verifyEmail.IsSmtpValid.Value ||
+		verifyEmail.IsDisposableEmail.Value {
+		return nil, status.Errorf(codes.InvalidArgument, "%s", i18n.GetI18nMessage("invalid_email", lang))
+	}
+
 	if _, err := a.store.GetUserByEmail(ctx, req.GetEmail()); err == nil {
 		return nil, status.Errorf(codes.AlreadyExists, "%s", i18n.GetI18nMessage("user_already_exists", lang))
 	} else {
@@ -129,7 +153,7 @@ func (a *AuthServer) Signup(ctx context.Context, req *auth.SignupRequest) (*auth
 		AfterCreate: func(user db.User) error {
 			taskPayload := worker.PayloadSendVerifyEmail{
 				Email: user.Email,
-				Lang: lang,
+				Lang:  lang,
 			}
 			opts := []asynq.Option{
 				asynq.MaxRetry(10),

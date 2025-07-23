@@ -19,6 +19,7 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserActiveStatus(ctx context.Context, arg UpdateUserActiveStatusParams) (User, error)
+	UpdateUserLastLogin(ctx context.Context, arg UpdateUserLastLoginParams) error
 	UpdateUserVerifiedStatus(ctx context.Context, arg UpdateUserVerifiedStatusParams) (User, error)
 	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error)
 }
