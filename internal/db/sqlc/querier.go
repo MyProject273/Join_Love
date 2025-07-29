@@ -12,14 +12,18 @@ import (
 
 type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) (UserProfile, error)
 	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
+	DeleteUserProfile(ctx context.Context, userID pgtype.UUID) error
 	GetListUser(ctx context.Context, arg GetListUserParams) ([]User, error)
 	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserProfile(ctx context.Context, userID pgtype.UUID) (UserProfile, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserActiveStatus(ctx context.Context, arg UpdateUserActiveStatusParams) (User, error)
 	UpdateUserLastLogin(ctx context.Context, arg UpdateUserLastLoginParams) error
+	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UserProfile, error)
 	UpdateUserVerifiedStatus(ctx context.Context, arg UpdateUserVerifiedStatusParams) (User, error)
 	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error)
 }

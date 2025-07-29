@@ -7,6 +7,9 @@
   "tags": [
     {
       "name": "AuthService"
+    },
+    {
+      "name": "UserService"
     }
   ],
   "consumes": [
@@ -83,6 +86,140 @@
         ]
       }
     },
+    "/api/v1/user_profiles": {
+      "post": {
+        "summary": "Create User Profile",
+        "description": "Create a new user profile.",
+        "operationId": "UserService_CreateUserProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileUserProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/profileCreateUserProfileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user_profiles/{userId}": {
+      "get": {
+        "summary": "Get User Profile",
+        "description": "Retrieve profile information of a specific user by user_id.",
+        "operationId": "UserService_GetUserProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileUserProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete User Profile",
+        "description": "Soft delete user profile by setting deleted_at timestamp.",
+        "operationId": "UserService_DeleteUserProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileDeleteUserProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "patch": {
+        "summary": "Update User Profile",
+        "description": "Update fields of an existing user profile.",
+        "operationId": "UserService_UpdateUserProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/profileUserProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserServiceUpdateUserProfileBody"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
     "/api/v1/verify_email": {
       "get": {
         "summary": "Verify Email",
@@ -123,6 +260,40 @@
     }
   },
   "definitions": {
+    "UserServiceUpdateUserProfileBody": {
+      "type": "object",
+      "properties": {
+        "jobTitle": {
+          "type": "string"
+        },
+        "education": {
+          "type": "string"
+        },
+        "interests": {
+          "type": "string"
+        },
+        "relationshipGoal": {
+          "type": "string"
+        },
+        "religion": {
+          "type": "string"
+        },
+        "smoking": {
+          "type": "string"
+        },
+        "drinking": {
+          "type": "string"
+        },
+        "heightCm": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "weightKg": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "authLoginRequest": {
       "type": "object",
       "properties": {
@@ -189,6 +360,109 @@
     "commonAuditFields": {
       "type": "object",
       "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdBy": {
+          "type": "string"
+        }
+      }
+    },
+    "profileCreateUserProfileRequest": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "jobTitle": {
+          "type": "string"
+        },
+        "education": {
+          "type": "string"
+        },
+        "interests": {
+          "type": "string"
+        },
+        "relationshipGoal": {
+          "type": "string"
+        },
+        "religion": {
+          "type": "string"
+        },
+        "smoking": {
+          "type": "string"
+        },
+        "drinking": {
+          "type": "string"
+        },
+        "heightCm": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "weightKg": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createdBy": {
+          "type": "string"
+        }
+      }
+    },
+    "profileDeleteUserProfileResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "profileUserProfileResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "jobTitle": {
+          "type": "string"
+        },
+        "education": {
+          "type": "string"
+        },
+        "interests": {
+          "type": "string"
+        },
+        "relationshipGoal": {
+          "type": "string"
+        },
+        "religion": {
+          "type": "string"
+        },
+        "smoking": {
+          "type": "string"
+        },
+        "drinking": {
+          "type": "string"
+        },
+        "heightCm": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "weightKg": {
+          "type": "integer",
+          "format": "int32"
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"

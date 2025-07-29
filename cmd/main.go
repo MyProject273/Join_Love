@@ -108,7 +108,6 @@ func runGrpcServer(
 		log.Fatal().Err(err).Msg("failed to create grpc server")
 	}
 
-	log.Info().Msgf("registered grpc services: %+v", server.GRPCServer.GetServiceInfo())
 	reflection.Register(server.GRPCServer)
 
 	listener, err := net.Listen("tcp", config.GrpcServerAddress)
@@ -191,8 +190,11 @@ func runGateWayServer(
 		},
 		AllowCredentials: true,
 	})
-	handler := c.Handler(helper.HttpLogger(mux))
-
+	handler := helper.HttpLogger(
+		helper.HttpAuthMiddleware(tokenMaker)(
+			c.Handler(mux),
+		),
+	)
 	httpServer := &http.Server{
 		Handler: handler,
 		Addr:    config.HttpServerAddress,

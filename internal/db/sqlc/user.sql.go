@@ -57,7 +57,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 const deleteUser = `-- name: DeleteUser :exec
 UPDATE users
 SET deleted_at = now()
-WHERE id = $1
+WHERE id = $1 AND deleted_at IS NULL
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
@@ -117,7 +117,7 @@ func (q *Queries) GetListUser(ctx context.Context, arg GetListUserParams) ([]Use
 
 const getUser = `-- name: GetUser :one
 SELECT id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by FROM users
-WHERE id = $1
+WHERE id = $1 AND deleted_at IS NULL
 `
 
 func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
@@ -186,7 +186,7 @@ SET user_name = COALESCE($1, user_name),
     birthdate = COALESCE($5, birthdate),
     avatar_url = COALESCE($6, avatar_url),
     bio = COALESCE($7, bio)
-WHERE id = $8
+WHERE id = $8 AND deleted_at IS NULL
 RETURNING id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
 `
 
@@ -239,7 +239,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 const updateUserActiveStatus = `-- name: UpdateUserActiveStatus :one
 UPDATE users
 SET is_active = $1
-WHERE id = $2
+WHERE id = $2 AND deleted_at IS NULL
 RETURNING id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
 `
 
@@ -277,7 +277,7 @@ func (q *Queries) UpdateUserActiveStatus(ctx context.Context, arg UpdateUserActi
 const updateUserLastLogin = `-- name: UpdateUserLastLogin :exec
 Update users
 SET last_login = $1
-WHERE id = $2
+WHERE id = $2 AND deleted_at IS NULL
 `
 
 type UpdateUserLastLoginParams struct {
@@ -293,7 +293,7 @@ func (q *Queries) UpdateUserLastLogin(ctx context.Context, arg UpdateUserLastLog
 const updateUserVerifiedStatus = `-- name: UpdateUserVerifiedStatus :one
 UPDATE users
 SET is_verified = $1
-WHERE id = $2
+WHERE id = $2 AND deleted_at IS NULL
 RETURNING id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
 `
 

@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package profile;
+
+import "validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MyProject273/Join_Love/pb/user/profile";
+
+message GetUserProfileRequest {
+  string user_id = 1 [(validate.rules).string = {uuid: true, min_len: 36, max_len: 36}];
+}
+
+message CreateUserProfileRequest {
+  string user_id = 1 [(validate.rules).string.uuid = true];
+  string job_title = 2 [(validate.rules).string = {max_len: 100}];
+  string education = 3 [(validate.rules).string = {max_len: 100}];
+  string interests = 4;
+  string relationship_goal = 5 [(validate.rules).string = {max_len: 50}];
+  string religion = 6 [(validate.rules).string = {max_len: 50}];
+  string smoking = 7 [(validate.rules).string = {max_len: 20}];
+  string drinking = 8 [(validate.rules).string = {max_len: 20}];
+  int32 height_cm = 9 [(validate.rules).int32 = {gte: 50, lte: 250}];
+  int32 weight_kg = 10 [(validate.rules).int32 = {gte: 20, lte: 300}];
+  string created_by = 11 [(validate.rules).string.uuid = true];
+}
+
+message UpdateUserProfileRequest {
+  string user_id = 1 [(validate.rules).string.uuid = true];
+  optional string job_title = 2 [(validate.rules).string = {max_len: 100}];
+  optional string education = 3 [(validate.rules).string = {max_len: 100}];
+  optional string interests = 4;
+  optional string relationship_goal = 5 [(validate.rules).string = {max_len: 50}];
+  optional string religion = 6 [(validate.rules).string = {max_len: 50}];
+  optional string smoking = 7 [(validate.rules).string = {max_len: 20}];
+  optional string drinking = 8 [(validate.rules).string = {max_len: 20}];
+  optional int32 height_cm = 9 [(validate.rules).int32 = {gte: 50, lte: 250}];
+  optional int32 weight_kg = 10 [(validate.rules).int32 = {gte: 20, lte: 300}];
+}
+
+message DeleteUserProfileRequest {
+  string user_id = 1 [(validate.rules).string.uuid = true];
+}
+
+message DeleteUserProfileResponse {
+  bool success = 1;
+}
+
+message UserProfileResponse {
+  string id = 1;
+  string user_id = 2;
+  string job_title = 3;
+  string education = 4;
+  string interests = 5;
+  string relationship_goal = 6;
+  string religion = 7;
+  string smoking = 8;
+  string drinking = 9;
+  int32 height_cm = 10;
+  int32 weight_kg = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  google.protobuf.Timestamp deleted_at = 14;
+  string created_by = 15;
+}

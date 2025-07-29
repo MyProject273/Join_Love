@@ -49,6 +49,8 @@ func CustomMatcher(key string) (string, bool) {
 	switch strings.ToLower(key) {
 	case "accept-language":
 		return key, true
+	case "authorization":
+		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}

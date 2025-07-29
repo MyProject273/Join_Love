@@ -6,6 +6,7 @@ import (
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
 	"github.com/MyProject273/Join_Love/internal/worker"
 	"github.com/MyProject273/Join_Love/pb/auth"
+	"github.com/MyProject273/Join_Love/pb/user"
 	"github.com/MyProject273/Join_Love/pkg/config"
 	"github.com/MyProject273/Join_Love/pkg/utils/token"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -14,8 +15,13 @@ import (
 
 func RegisterAllHandlers(ctx context.Context, mux *runtime.ServeMux, cfg config.Config, store db.Store, tokenMaker token.Maker, logger zerolog.Logger, taskDistributor worker.TaskDistributor) error {
 	authServer := NewAuthServer(cfg, store, tokenMaker, logger, taskDistributor)
+	userServer := NewUserServer(cfg, store, logger)
 
 	if err := auth.RegisterAuthServiceHandlerServer(ctx, mux, authServer); err != nil {
+		return err
+	}
+
+	if err := user.RegisterUserServiceHandlerServer(ctx, mux, userServer); err != nil {
 		return err
 	}
 	return nil

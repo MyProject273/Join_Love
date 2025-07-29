@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package user;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "user/profile/rcp_profile.proto";
+
+option go_package = "github.com/MyProject273/Join_Love/pb/user";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "JoinLove User API";
+    version: "1.0";
+  };
+};
+
+service UserService {
+  rpc GetUserProfile(profile.GetUserProfileRequest) returns (profile.UserProfileResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/user_profiles/{user_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get User Profile";
+      description: "Retrieve profile information of a specific user by user_id.";
+    };
+  }
+
+  rpc CreateUserProfile(profile.CreateUserProfileRequest) returns (profile.UserProfileResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/user_profiles"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create User Profile";
+      description: "Create a new user profile.";
+    };
+  }
+
+  rpc UpdateUserProfile(profile.UpdateUserProfileRequest) returns (profile.UserProfileResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/user_profiles/{user_id}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update User Profile";
+      description: "Update fields of an existing user profile.";
+    };
+  }
+
+  rpc DeleteUserProfile(profile.DeleteUserProfileRequest) returns (profile.DeleteUserProfileResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/user_profiles/{user_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete User Profile";
+      description: "Soft delete user profile by setting deleted_at timestamp.";
+    };
+  }
+}
