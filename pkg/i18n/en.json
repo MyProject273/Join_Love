@@ -10,5 +10,9 @@
   "users_email_key": "Email already exists",
   "users_user_name_key": "Username already exists",
 
-  "internal_error": "Internal error"
+  "internal_error": "Internal error",
+
+  "success": "Success",
+
+  "common.invalid": "Invalid data"
 }
