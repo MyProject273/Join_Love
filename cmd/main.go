@@ -9,9 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	api "github.com/MyProject273/Join_Love/api/v1"
 	_ "github.com/MyProject273/Join_Love/doc/statik"
 	"github.com/MyProject273/Join_Love/gapi/helper"
 	v1 "github.com/MyProject273/Join_Love/gapi/v1"
+
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
 	"github.com/MyProject273/Join_Love/internal/mail"
 	"github.com/MyProject273/Join_Love/internal/worker"
@@ -50,7 +52,8 @@ func main() {
 	})
 
 	runGrpcServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
-	runGateWayServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
+	// runGateWayServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
+	runGinServer(ctx, config, store, tokenMaker, logger)
 	if err := waitGroup.Wait(); err != nil {
 		log.Error().Err(err).Msg("application exited with error")
 	} else {
@@ -223,6 +226,50 @@ func runGateWayServer(
 		log.Info().Msg("HTTP gateway server is stopped")
 		return nil
 	})
+}
+
+func runGinServer(
+	ctx context.Context,
+	config config.Config,
+	store db.Store,
+	tokenMaker token.Maker,
+	logger zerolog.Logger,
+) error {
+	server, err := api.NewServer(config, store, tokenMaker, logger)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to create HTTP server")
+	}
+
+	httpServer := &http.Server{
+		Addr:    config.HttpServerAddress,
+		Handler: server.Router(),
+	}
+
+	// Start server in goroutine
+	serverErrChan := make(chan error, 1)
+	go func() {
+		log.Info().Msgf("Gin HTTP server running at %s", httpServer.Addr)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			serverErrChan <- err
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		// Graceful shutdown
+		log.Info().Msg("Shutting down Gin HTTP server...")
+
+		if err := httpServer.Shutdown(context.Background()); err != nil {
+			log.Error().Err(err).Msg("Gin HTTP server forced to shutdown")
+			return err
+		}
+		log.Info().Msg("Gin HTTP server stopped gracefully")
+		return nil
+
+	case err := <-serverErrChan:
+		log.Error().Err(err).Msg("Gin HTTP server encountered an error")
+		return err
+	}
 }
 
 func startTaskProcessor(ctx context.Context, config config.Config, store db.Store, redisOpt asynq.RedisClientOpt) error {
