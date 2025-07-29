@@ -16,7 +16,7 @@ OFFSET $2;
 
 -- name: GetUser :one
 SELECT * FROM users
-WHERE id = $1;
+WHERE id = $1 AND deleted_at IS NULL;
 
 -- name: GetUserByEmail :one
 SELECT * FROM users
@@ -25,7 +25,7 @@ WHERE email = $1 LIMIT 1 ;
 -- name: DeleteUser :exec
 UPDATE users
 SET deleted_at = now()
-WHERE id = $1 ;
+WHERE id = $1 AND deleted_at IS NULL;
 
 -- name: UpdateUser :one
 UPDATE users
@@ -36,22 +36,22 @@ SET user_name = COALESCE(sqlc.narg(user_name), user_name),
     birthdate = COALESCE(sqlc.narg(birthdate), birthdate),
     avatar_url = COALESCE(sqlc.narg(avatar_url), avatar_url),
     bio = COALESCE(sqlc.narg(bio), bio)
-WHERE id = sqlc.arg(id)
+WHERE id = sqlc.arg(id) AND deleted_at IS NULL
 RETURNING *;
 
 -- name: UpdateUserActiveStatus :one
 UPDATE users
 SET is_active = $1
-WHERE id = $2
+WHERE id = $2 AND deleted_at IS NULL
 RETURNING *;
 
 -- name: UpdateUserVerifiedStatus :one
 UPDATE users
 SET is_verified = $1
-WHERE id = $2
+WHERE id = $2 AND deleted_at IS NULL
 RETURNING *;
 
 -- name: UpdateUserLastLogin :exec
 Update users
 SET last_login = $1
-WHERE id = $2;
+WHERE id = $2 AND deleted_at IS NULL;
