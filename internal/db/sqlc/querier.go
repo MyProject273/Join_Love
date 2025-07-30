@@ -11,10 +11,12 @@ import (
 )
 
 type Querier interface {
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
 	GetListUser(ctx context.Context, arg GetListUserParams) ([]User, error)
+	GetSession(ctx context.Context, id pgtype.UUID) (Session, error)
 	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

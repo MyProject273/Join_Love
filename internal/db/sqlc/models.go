@@ -123,6 +123,17 @@ type Report struct {
 	CreatedBy  pgtype.UUID      `json:"created_by"`
 }
 
+type Session struct {
+	ID           pgtype.UUID        `json:"id"`
+	UserID       pgtype.UUID        `json:"user_id"`
+	RefreshToken string             `json:"refresh_token"`
+	UserAgent    string             `json:"user_agent"`
+	ClientIp     string             `json:"client_ip"`
+	IsBlocked    bool               `json:"is_blocked"`
+	ExpiresAt    pgtype.Timestamptz `json:"expires_at"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
 type Subscription struct {
 	ID        pgtype.UUID      `json:"id"`
 	UserID    pgtype.UUID      `json:"user_id"`
