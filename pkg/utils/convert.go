@@ -94,3 +94,20 @@ func StringToPgUUIDSafe(s string) pgtype.UUID {
 	}
 	return uuid
 }
+
+func UUIDToPgUUID(u uuid.UUID) (pgtype.UUID, error) {
+	var pgUUID pgtype.UUID
+	if err := pgUUID.Scan(u.String()); err != nil {
+		return pgtype.UUID{}, fmt.Errorf("UUIDToPgUUID: cannot scan to pgtype.UUID: %w", err)
+	}
+	return pgUUID, nil
+}
+
+// Safe version: ignore error, return zero value on fail
+func UUIDToPgUUIDSafe(u uuid.UUID) pgtype.UUID {
+	pgUUID, err := UUIDToPgUUID(u)
+	if err != nil {
+		return pgtype.UUID{}
+	}
+	return pgUUID
+}
