@@ -17,6 +17,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog"
 )
 
 type (
@@ -30,29 +31,34 @@ type (
 		config          config.Config
 		tokenMaker      token.Maker
 		taskDistributor worker.TaskDistributor
+		logger          zerolog.Logger
 	}
 )
 
-func NewAuthService(store db.Store, config config.Config, tokenMaker token.Maker, taskDistributor worker.TaskDistributor) AuthService {
+func NewAuthService(store db.Store, config config.Config, tokenMaker token.Maker, taskDistributor worker.TaskDistributor, logger zerolog.Logger) AuthService {
 	return &authService{
 		store:           store,
 		config:          config,
 		tokenMaker:      tokenMaker,
 		taskDistributor: taskDistributor,
+		logger:          logger,
 	}
 }
 
 func (a *authService) Signup(ctx *gin.Context, req auth_dto.SignupReq) (res auth_dto.SignupRes, err error) {
 	user, err := a.store.GetUserByEmail(ctx, req.Email)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		a.logger.Error().Err(err).Str("email", req.Email).Msg("Failed to get user by email during signup")
 		return res, fmt.Errorf("get user error: %w", err)
 	}
 	if user.Email != "" {
+		a.logger.Warn().Str("email", req.Email).Msg("User already exists")
 		return res, fmt.Errorf("%w: user with email %s already exists", apperr.ErrUserAlreadyExists, req.Email)
 	}
 
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
+		a.logger.Error().Err(err).Msg("Failed to hash password")
 		return res, fmt.Errorf("%w: %v", apperr.ErrHashPassword, err)
 	}
 
@@ -72,14 +78,22 @@ func (a *authService) Signup(ctx *gin.Context, req auth_dto.SignupReq) (res auth
 				asynq.Queue(worker.QueueCritical),
 			}
 
-			return a.taskDistributor.DistributeTaskSendVerifyEmail(ctx, &taskPayload, opts...)
+			err := a.taskDistributor.DistributeTaskSendVerifyEmail(ctx, &taskPayload, opts...)
+			if err != nil {
+				a.logger.Error().Err(err).Str("email", user.Email).Msg("Failed to enqueue verification email")
+			} else {
+				a.logger.Info().Str("email", user.Email).Msg("Verification email enqueued")
+			}
+			return err
 		},
 	}
 
 	txResult, err := a.store.CreateUserTx(ctx, arg)
 	if err != nil {
+		a.logger.Error().Err(err).Str("email", req.Email).Msg("Failed to create user transaction")
 		return res, fmt.Errorf("%w: %s", apperr.ErrCreateUser, err)
 	}
+
 	res = auth_dto.SignupRes{
 		UserID:   txResult.User.ID.String(),
 		UserName: txResult.User.UserName,
@@ -92,12 +106,15 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 	user, err := a.store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
+			a.logger.Warn().Str("email", req.Email).Msg("User not found")
 			return res, fmt.Errorf("%w: %v", apperr.ErrUserNotFound, err)
 		}
+		a.logger.Error().Err(err).Str("email", req.Email).Msg("Failed to get user")
 		return res, fmt.Errorf("get user error: %w", err)
 	}
 
 	if err := utils.CheckPassword(req.Password, user.PasswordHash); err != nil {
+		a.logger.Warn().Str("email", req.Email).Msg("Incorrect password")
 		return res, apperr.ErrMismatchPassword
 	}
 
@@ -108,6 +125,7 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 		consts.TokenTypeAccessToken,
 	)
 	if err != nil {
+		a.logger.Error().Err(err).Str("user", user.UserName).Msg("Failed to create access token")
 		return res, fmt.Errorf("%w: %v", apperr.ErrCreateAccessToken, err)
 	}
 
@@ -118,6 +136,7 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 		consts.TokenTypeRefreshToken,
 	)
 	if err != nil {
+		a.logger.Error().Err(err).Str("user", user.UserName).Msg("Failed to create refresh token")
 		return res, fmt.Errorf("%w: %v", apperr.ErrCreateRefreshToken, err)
 	}
 
@@ -136,6 +155,7 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 		ExpiresAt:    expiresAt,
 	})
 	if err != nil {
+		a.logger.Error().Err(err).Str("user_id", user.ID.String()).Msg("Failed to create session")
 		return res, fmt.Errorf("%w: %v", apperr.ErrCreateSession, err)
 	}
 
@@ -143,8 +163,8 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 		LastLogin: pgtype.Timestamp{Time: time.Now(), Valid: true},
 		ID:        user.ID,
 	})
-
 	if err != nil {
+		a.logger.Error().Err(err).Str("user_id", user.ID.String()).Msg("Failed to update last login")
 		return res, fmt.Errorf("%w: %v", apperr.ErrInternalServer, err)
 	}
 
