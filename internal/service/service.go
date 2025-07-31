@@ -5,14 +5,15 @@ import (
 	"github.com/MyProject273/Join_Love/internal/worker"
 	"github.com/MyProject273/Join_Love/pkg/config"
 	"github.com/MyProject273/Join_Love/pkg/utils/token"
+	"github.com/rs/zerolog"
 )
 
 type Services struct {
 	AuthService AuthService
 }
 
-func NewServices(store db.Store, config config.Config, tokenMaker token.Maker, taskDistributor worker.TaskDistributor) *Services {
+func NewServices(store db.Store, config config.Config, tokenMaker token.Maker, taskDistributor worker.TaskDistributor, logger zerolog.Logger) *Services {
 	return &Services{
-		AuthService: NewAuthService(store, config, tokenMaker, taskDistributor),
+		AuthService: NewAuthService(store, config, tokenMaker, taskDistributor, logger),
 	}
 }

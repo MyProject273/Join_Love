@@ -53,7 +53,7 @@ func main() {
 
 	runGrpcServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
 	// runGateWayServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
-	runGinServer(ctx, config, store, tokenMaker, logger)
+	runGinServer(ctx, config, store, tokenMaker, logger, taskDistributor)
 	if err := waitGroup.Wait(); err != nil {
 		log.Error().Err(err).Msg("application exited with error")
 	} else {
@@ -234,8 +234,9 @@ func runGinServer(
 	store db.Store,
 	tokenMaker token.Maker,
 	logger zerolog.Logger,
+	taskDistributor worker.TaskDistributor,
 ) error {
-	server, err := api.NewServer(config, store, tokenMaker, logger)
+	server, err := api.NewServer(config, store, tokenMaker, logger, taskDistributor)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create HTTP server")
 	}

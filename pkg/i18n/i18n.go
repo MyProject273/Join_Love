@@ -1,11 +1,13 @@
 package i18n
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
+	"text/template"
 )
 
 var (
@@ -52,4 +54,19 @@ func GetI18nMessage(key, lang string) string {
 		return msg
 	}
 	return "Something went wrong"
+}
+
+func GetI18nMessageWithData(key, lang string, data any) string {
+	tmplStr := GetI18nMessage(key, lang)
+	tmpl, err := template.New("i18n").Parse(tmplStr)
+	if err != nil {
+		return "Template parsing error"
+	}
+
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, data)
+	if err != nil {
+		return "Template execution error"
+	}
+	return buf.String()
 }
