@@ -1,8 +1,11 @@
 package helper
 
 import (
+	"net/http"
+
 	"github.com/MyProject273/Join_Love/pkg/i18n"
 	"github.com/MyProject273/Join_Love/pkg/utils/rescode"
+	"github.com/MyProject273/Join_Love/pkg/val"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,6 +43,16 @@ func AbortWithErrorResponse(ctx *gin.Context, code rescode.Code, err error) {
 		Data:    nil,
 		Message: i18n.GetI18nMessage(getLang(ctx), code.MessageKey()),
 		Error:   err.Error(),
+	})
+}
+
+func RespondValidationError(ctx *gin.Context, err error) {
+	errs := val.ParseValidationErrorI18n(err, getLang(ctx))
+	ctx.JSON(http.StatusBadRequest, Response{
+		Code:    rescode.Invalid.Code(),
+		Message: i18n.GetI18nMessage(getLang(ctx), rescode.Invalid.MessageKey()),
+		Data:    nil,
+		Error:   errs,
 	})
 }
 
