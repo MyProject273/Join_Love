@@ -198,7 +198,7 @@ func (a *AuthServer) VerifyEmail(ctx context.Context, req *auth.VerifyEmailReque
 	}
 
 	txResult, err := a.store.VerifyEmailTx(ctx, db.VerifyEmailTxParams{
-		EmailId:    req.EmailId,
+		VerifyEmailId:    req.EmailId,
 		SecretCode: req.SecretCode,
 	})
 	if err != nil {

@@ -24,6 +24,7 @@ type (
 	AuthService interface {
 		Signup(ctx *gin.Context, req auth_dto.SignupReq) (auth_dto.SignupRes, error)
 		Login(ctx *gin.Context, req auth_dto.LoginReq) (auth_dto.LoginRes, error)
+		VerifyEmail(ctx *gin.Context, req auth_dto.VerifyEmailReq) (auth_dto.VerifyEmailRes, error)
 	}
 
 	authService struct {
@@ -189,5 +190,26 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 			RefreshTokenExpiresIn: refreshPayload.ExpiredAt,
 		},
 	}
+	return res, nil
+}
+
+func (a *authService) VerifyEmail(ctx *gin.Context, req auth_dto.VerifyEmailReq) (res auth_dto.VerifyEmailRes, err error) {
+	txResult, err := a.store.VerifyEmailTx(ctx, db.VerifyEmailTxParams{
+		VerifyEmailId: req.VerifyEmailID,
+		SecretCode:    req.SecretCode,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			a.logger.Warn().Str("verify_email_id", req.VerifyEmailID).Msg("VerifyEmail record not found")
+			return res, rescode.Internal
+		}
+	}
+
+	if txResult.User.IsVerified {
+		res.IsVerified = "true"
+	} else {
+		res.IsVerified = "false"
+	}
+
 	return res, nil
 }

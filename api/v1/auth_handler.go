@@ -13,6 +13,7 @@ type (
 	AuthHandler interface {
 		Signup(ctx *gin.Context)
 		Login(ctx *gin.Context)
+		VerifyEmail(ctx *gin.Context)
 	}
 
 	authHandler struct {
@@ -29,9 +30,7 @@ func NewAuthHandler(authService service.AuthService) AuthHandler {
 func (a *authHandler) Signup(ctx *gin.Context) {
 	var req auth_dto.SignupReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error().
-			Err(err).
-			Msg("Failed to bind JSON for signup")
+		log.Error().Err(err).Msg("Failed to bind JSON for signup")
 		helper.RespondValidationError(ctx, err)
 		return
 	}
@@ -40,7 +39,7 @@ func (a *authHandler) Signup(ctx *gin.Context) {
 		log.Err(err).
 			Str("email", req.Email).
 			Msg("Failed to signup")
-		helper.RespondError(ctx, rescode.Internal, err)
+		helper.RespondError(ctx, err)
 		return
 	}
 	log.Info().Str("email", res.Email).Msg("Signup successful")
@@ -50,33 +49,36 @@ func (a *authHandler) Signup(ctx *gin.Context) {
 func (a *authHandler) Login(ctx *gin.Context) {
 	var req auth_dto.LoginReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Error().
-			Err(err).
-			Msg("Failed to bind JSON for login")
+		log.Error().Err(err).Msg("Failed to bind JSON for login")
 		helper.RespondValidationError(ctx, err)
 		return
 	}
 
 	res, err := a.authService.Login(ctx, req)
 	if err != nil {
-		var code rescode.Code
-		log.Error().
-			Err(err).
-			Str("email", req.Email).
-			Msg("Failed to login")
-		if c, ok := err.(rescode.Code); ok {
-			code = c
-		} else {
-			code = rescode.Internal
-		}
-		helper.RespondError(ctx, code, err)
+		log.Error().Err(err).Str("email", req.Email).Msg("Failed to login")
+		helper.RespondError(ctx, err)
+		return
+	}
+	log.Info().Str("email", req.Email).Str("user_id", res.UserID).Msg("User login successful")
+	helper.RespondSuccess(ctx, res, rescode.Success)
+}
+
+func (a *authHandler) VerifyEmail(ctx *gin.Context) {
+	var req auth_dto.VerifyEmailReq
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		log.Error().Err(err).Msg("Failed to bind query for verify email")
+		helper.RespondValidationError(ctx, err)
 		return
 	}
 
-	log.Info().
-		Str("email", req.Email).
-		Str("user_id", res.UserID).
-		Msg("User login successful")
+	res, err := a.authService.VerifyEmail(ctx, req)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to verify email")
+		helper.RespondError(ctx, err)
+		return
+	}
 
+	log.Info().Str("verify_email_id", req.VerifyEmailID).Msg("Verify email successful")
 	helper.RespondSuccess(ctx, res, rescode.Success)
 }

@@ -35,3 +35,12 @@ type SignupRes struct {
 	UserName string `json:"user_name"`
 	Email    string `json:"email"`
 }
+
+type VerifyEmailReq struct {
+	VerifyEmailID string `form:"email_id" binding:"required"`
+	SecretCode    string `form:"secret_code" binding:"required"`
+}
+
+type VerifyEmailRes struct {
+	IsVerified string `json:"is_verified"`
+}

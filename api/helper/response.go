@@ -28,7 +28,13 @@ func RespondSuccess(ctx *gin.Context, data interface{}, code rescode.Code) {
 }
 
 // Function response return error
-func RespondError(ctx *gin.Context, code rescode.Code, err error) {
+func RespondError(ctx *gin.Context, err error) {
+	var code rescode.Code
+	if c, ok := err.(rescode.Code); ok {
+		code = c
+	} else {
+		code = rescode.Internal
+	}
 	ctx.JSON(code.HTTPStatus(), Response{
 		Code:    code.Code(),
 		Data:    nil,

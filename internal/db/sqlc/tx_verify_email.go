@@ -7,8 +7,8 @@ import (
 )
 
 type VerifyEmailTxParams struct {
-	EmailId    string
-	SecretCode string
+	VerifyEmailId string
+	SecretCode    string
 }
 
 type VerifyEmailTxResult struct {
@@ -21,12 +21,12 @@ func (store *SQLStore) VerifyEmailTx(ctx context.Context, arg VerifyEmailTxParam
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
-		emailId, err := utils.StringToPgUUID(arg.EmailId)
+		VerifyEmailId, err := utils.StringToPgUUID(arg.VerifyEmailId)
 		if err != nil {
 			return err
 		}
 		result.VerifyEmail, err = q.UpdateVerifyEmail(ctx, UpdateVerifyEmailParams{
-			ID:         emailId,
+			ID:         VerifyEmailId,
 			SecretCode: arg.SecretCode,
 		})
 		if err != nil {
