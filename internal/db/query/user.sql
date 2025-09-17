@@ -55,3 +55,9 @@ RETURNING *;
 Update users
 SET last_login = $1
 WHERE id = $2;
+
+-- name: CheckUserVerified :one
+SELECT is_verified
+FROM users
+WHERE id = $1
+  AND deleted_at IS NULL;

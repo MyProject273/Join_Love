@@ -118,6 +118,15 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 		return res, rescode.InvalidCredentials
 	}
 
+	isVerified, err := a.store.CheckUserVerified(ctx, user.ID)
+	if err != nil {
+		a.logger.Warn().Str("email", req.Email).Msg("Failed to check user verified")
+		return res, rescode.Internal
+	}
+	if isVerified == false {
+		return res, rescode.UserNotVerified
+	}
+
 	accessToken, accessPayload, err := a.tokenMaker.CreateToken(
 		user.UserName,
 		user.Role,
