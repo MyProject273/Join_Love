@@ -59,12 +59,17 @@ func (a *authHandler) Login(ctx *gin.Context) {
 
 	res, err := a.authService.Login(ctx, req)
 	if err != nil {
+		var code rescode.Code
 		log.Error().
 			Err(err).
 			Str("email", req.Email).
 			Msg("Failed to login")
-
-		helper.RespondError(ctx, rescode.Internal, err)
+		if c, ok := err.(rescode.Code); ok {
+			code = c
+		} else {
+			code = rescode.Internal
+		}
+		helper.RespondError(ctx, code, err)
 		return
 	}
 

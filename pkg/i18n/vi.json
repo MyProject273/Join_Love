@@ -66,6 +66,10 @@
   "user.disable": "Tài khoản người dùng đã bị vô hiệu hóa",
   "user.not_verified": "Tài khoản người dùng chưa được xác minh",
   "user.locked": "Tài khoản người dùng đã bị khóa",
+   "user.create_failed": "Tạo người dùng thất bại",
+  "user.update_failed": "Cập nhật người dùng thất bại",
+  "user.delete_failed": "Xóa người dùng thất bại",
+  "user.get_failed": "Lấy thông tin người dùng thất bại",
 
   "auth.invalid_credentials": "Tài khoản hoặc mật khẩu không chính xác",
   "auth.token_expired": "Token đã hết hạn",

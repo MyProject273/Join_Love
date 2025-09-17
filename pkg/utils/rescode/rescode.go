@@ -1,6 +1,9 @@
 package rescode
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 /*
 001	NOT_FOUND	Dữ liệu không tồn tại
@@ -53,6 +56,7 @@ type Code struct {
 	Key       string
 	Http      int
 	DetailKey string
+	Err       error
 }
 
 func (c Code) Code() int {
@@ -72,52 +76,77 @@ func (c Code) WithDetailKey(detail string) Code {
 	return c
 }
 
+func (c Code) Error() string {
+	if c.Err != nil {
+		return c.Err.Error()
+	}
+	return c.Key
+}
+
 var (
 	// Success
-	Success = Code{200, "success", http.StatusOK, ""}
+	Success = Code{200, "success", http.StatusOK, "", nil}
 
 	// User
-	UserNotFound      = Code{10001, "user.not_found", http.StatusNotFound, ""}
-	UserInvalid       = Code{10002, "user.invalid", http.StatusBadRequest, ""}
-	UserRequire       = Code{10003, "user.require", http.StatusBadRequest, ""}
-	UserAlreadyExists = Code{10004, "user.already_exists", http.StatusConflict, ""}
-	UserNotVerified   = Code{10044, "user.not_verified", http.StatusUnauthorized, ""}
-	UserDisable       = Code{10043, "user.locked", http.StatusForbidden, ""}
+	UserNotFound      = Code{10001, "user.not_found", http.StatusNotFound, "", errors.New("user not found")}
+	UserInvalid       = Code{10002, "user.invalid", http.StatusBadRequest, "", errors.New("invalid user data")}
+	UserRequire       = Code{10003, "user.require", http.StatusBadRequest, "", errors.New("user required")}
+	UserAlreadyExists = Code{10004, "user.already_exists", http.StatusConflict, "", errors.New("user already exists")}
+	UserNotVerified   = Code{10044, "user.not_verified", http.StatusUnauthorized, "", errors.New("user not verified")}
+	UserDisable       = Code{10043, "user.locked", http.StatusForbidden, "", errors.New("user disabled")}
+	UserCreateFailed  = Code{10011, "user.create_failed", http.StatusInternalServerError, "", errors.New("failed to create user")}
+	UserUpdateFailed  = Code{10012, "user.update_failed", http.StatusInternalServerError, "", errors.New("failed to update user")}
+	UserDeleteFailed  = Code{10013, "user.delete_failed", http.StatusInternalServerError, "", errors.New("failed to delete user")}
+	UserGetFailed     = Code{10014, "user.get_failed", http.StatusInternalServerError, "", errors.New("failed to get user")}
+
+	// Token
 
 	// Auth
-	InvalidCredentials                     = Code{20001, "auth.invalid_credentials", http.StatusUnauthorized, ""}
-	TokenExpired                           = Code{20002, "auth.token_expired", http.StatusUnauthorized, ""}
-	TokenInvalid                           = Code{20003, "auth.token_invalid", http.StatusUnauthorized, ""}
-	PermissionDenied                       = Code{20004, "auth.permission_denied", http.StatusForbidden, ""}
-	AuthRequired                           = Code{20005, "auth.required", http.StatusUnauthorized, ""}
-	AuthorizedHeaderNotProvided            = Code{20027, "auth.authorized_header_not_provided", http.StatusUnauthorized, ""}
-	AuthorizedInvalidHeaderFormat          = Code{20027, "auth.authorized_invalid_header_format", http.StatusUnauthorized, ""}
-	AuthorizedUnsupportedAuthorizationType = Code{20027, "auth.authorized_unsupported_authorization_type", http.StatusUnauthorized, ""}
+	InvalidCredentials = Code{20001, "auth.invalid_credentials", http.StatusUnauthorized, "", errors.New("invalid credentials")}
+	TokenExpired       = Code{20002, "auth.token_expired", http.StatusUnauthorized, "", errors.New("token expired")}
+	TokenInvalid       = Code{20003, "auth.token_invalid", http.StatusUnauthorized, "", errors.New("invalid token")}
+	PermissionDenied   = Code{20004, "auth.permission_denied", http.StatusForbidden, "", errors.New("permission denied")}
+	AuthRequired       = Code{20005, "auth.required", http.StatusUnauthorized, "", errors.New("authentication required")}
 
 	// File
-	FileTooLarge        = Code{33001, "file.too_large", http.StatusRequestEntityTooLarge, ""}
-	UnsupportedFileType = Code{33002, "file.unsupported_type", http.StatusUnsupportedMediaType, ""}
-	InvalidFileFormat   = Code{33003, "file.invalid_format", http.StatusBadRequest, ""}
+	FileTooLarge        = Code{33001, "file.too_large", http.StatusRequestEntityTooLarge, "", errors.New("file too large")}
+	UnsupportedFileType = Code{33002, "file.unsupported_type", http.StatusUnsupportedMediaType, "", errors.New("unsupported file type")}
+	InvalidFileFormat   = Code{33003, "file.invalid_format", http.StatusBadRequest, "", errors.New("invalid file format")}
 
 	// Common
-	NotFound         = Code{99001, "common.not_found", http.StatusNotFound, ""}
-	Invalid          = Code{99002, "common.invalid", http.StatusBadRequest, ""}
-	Required         = Code{99003, "common.required", http.StatusBadRequest, ""}
-	AlreadyExists    = Code{99004, "common.already_exists", http.StatusConflict, ""}
-	Expired          = Code{99006, "common.expired", http.StatusUnauthorized, ""}
-	Conflict         = Code{99008, "common.conflict", http.StatusConflict, ""}
-	Internal         = Code{99010, "common.internal", http.StatusInternalServerError, ""}
-	CreationFailed   = Code{99011, "common.creation_failed", http.StatusInternalServerError, ""}
-	UpdateFailed     = Code{99012, "common.update_failed", http.StatusInternalServerError, ""}
-	DeleteFailed     = Code{99013, "common.delete_failed", http.StatusInternalServerError, ""}
-	ValidationFailed = Code{99016, "common.validation_failed", http.StatusBadRequest, ""}
-	TooManyRequests  = Code{99018, "common.too_many_requests", http.StatusTooManyRequests, ""}
-	Database         = Code{99022, "common.database", http.StatusInternalServerError, ""}
-	Cache            = Code{99023, "common.cache", http.StatusInternalServerError, ""}
-	Queue            = Code{99024, "common.queue", http.StatusInternalServerError, ""}
-	ThirdParty       = Code{99025, "common.third_party", http.StatusBadGateway, ""}
-	Config           = Code{99026, "common.configuration", http.StatusInternalServerError, ""}
-	UnexpectedState  = Code{99030, "common.unexpected_state", http.StatusInternalServerError, ""}
-	NotImplemented   = Code{99032, "common.not_implemented", http.StatusNotImplemented, ""}
-	UnAuthorized     = Code{99027, "common.un_authorized", http.StatusUnauthorized, ""}
+	NotFound              = Code{99001, "common.not_found", http.StatusNotFound, "", errors.New("not found")}
+	Invalid               = Code{99002, "common.invalid", http.StatusBadRequest, "", errors.New("invalid data")}
+	Required              = Code{99003, "common.required", http.StatusBadRequest, "", errors.New("required data missing")}
+	AlreadyExists         = Code{99004, "common.already_exists", http.StatusConflict, "", errors.New("already exists")}
+	Expired               = Code{99006, "common.expired", http.StatusUnauthorized, "", errors.New("expired")}
+	Mismatch              = Code{99007, "common.mismatch", http.StatusBadRequest, "", errors.New("data mismatch")}
+	Conflict              = Code{99008, "common.conflict", http.StatusConflict, "", errors.New("conflict")}
+	NotAllowed            = Code{99009, "common.not_allowed", http.StatusForbidden, "", errors.New("not allowed")}
+	Internal              = Code{99010, "common.internal", http.StatusInternalServerError, "", errors.New("internal error")}
+	CreationFailed        = Code{99011, "common.creation_failed", http.StatusInternalServerError, "", errors.New("creation failed")}
+	UpdateFailed          = Code{99012, "common.update_failed", http.StatusInternalServerError, "", errors.New("update failed")}
+	DeleteFailed          = Code{99013, "common.delete_failed", http.StatusInternalServerError, "", errors.New("delete failed")}
+	ValidationFailed      = Code{99016, "common.validation_failed", http.StatusBadRequest, "", errors.New("validation failed")}
+	TooManyRequests       = Code{99018, "common.too_many_requests", http.StatusTooManyRequests, "", errors.New("too many requests")}
+	Database              = Code{99022, "common.database", http.StatusInternalServerError, "", errors.New("database error")}
+	Cache                 = Code{99023, "common.cache", http.StatusInternalServerError, "", errors.New("cache error")}
+	Queue                 = Code{99024, "common.queue", http.StatusInternalServerError, "", errors.New("queue error")}
+	ThirdParty            = Code{99025, "common.third_party", http.StatusBadGateway, "", errors.New("third party error")}
+	Config                = Code{99026, "common.configuration", http.StatusInternalServerError, "", errors.New("configuration error")}
+	UnAuthorized          = Code{99027, "common.un_authorized", http.StatusUnauthorized, "", errors.New("unauthorized")}
+	ResourceLocked        = Code{99028, "common.resource_locked", http.StatusConflict, "", errors.New("resource locked")}
+	AlreadyProcessed      = Code{99029, "common.already_processed", http.StatusConflict, "", errors.New("already processed")}
+	UnexpectedState       = Code{99030, "common.unexpected_state", http.StatusInternalServerError, "", errors.New("unexpected state")}
+	SessionExpired        = Code{99031, "common.session_expired", http.StatusUnauthorized, "", errors.New("session expired")}
+	NotImplemented        = Code{99032, "common.not_implemented", http.StatusNotImplemented, "", errors.New("not implemented")}
+	VerificationFailed    = Code{99034, "common.verification_failed", http.StatusBadRequest, "", errors.New("verification failed")}
+	UnsupportedMediaType  = Code{99035, "common.unsupported_media_type", http.StatusUnsupportedMediaType, "", errors.New("unsupported media type")}
+	MaxUploadSizeExceeded = Code{99037, "common.max_upload_size_exceeded", http.StatusRequestEntityTooLarge, "", errors.New("max upload size exceeded")}
+	DuplicateRequest      = Code{99038, "common.duplicate_request", http.StatusConflict, "", errors.New("duplicate request")}
+	SignatureInvalid      = Code{99039, "common.signature_invalid", http.StatusBadRequest, "", errors.New("signature invalid")}
+	PaymentRequired       = Code{99040, "common.payment_required", http.StatusPaymentRequired, "", errors.New("payment required")}
+	BalanceNotEnough      = Code{99041, "common.balance_not_enough", http.StatusForbidden, "", errors.New("balance not enough")}
+	AccountLocked         = Code{99042, "common.account_locked", http.StatusForbidden, "", errors.New("account locked")}
+	AccountDisabled       = Code{99043, "common.account_disabled", http.StatusForbidden, "", errors.New("account disabled")}
+	AccountNotVerified    = Code{99044, "common.account_not_verified", http.StatusUnauthorized, "", errors.New("account not verified")}
 )

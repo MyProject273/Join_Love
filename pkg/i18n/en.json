@@ -66,6 +66,10 @@
   "user.disable": "User account is disabled",
   "user.not_verified": "User account is not verified",
   "user.locked": "User account is locked",
+  "user.create_failed": "Create user failed",
+  "user.update_failed":"Update user failed",
+  "user.delete_failed":"Delete user failed",
+  "user.get_failed":"Get user failed",
 
   "auth.invalid_credentials": "Invalid credentials",
   "auth.token_expired": "Token has expired",
