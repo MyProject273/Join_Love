@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	errs "github.com/MyProject273/Join_Love/pkg/error"
+	errs "github.com/MyProject273/Join_Love/pkg/utils/error"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 

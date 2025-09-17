@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	api "github.com/MyProject273/Join_Love/api/v1"
+	api "github.com/MyProject273/Join_Love/api"
 	_ "github.com/MyProject273/Join_Love/doc/statik"
 	"github.com/MyProject273/Join_Love/gapi/helper"
 	v1 "github.com/MyProject273/Join_Love/gapi/v1"
@@ -51,7 +51,7 @@ func main() {
 		return startTaskProcessor(ctx, config, store, redisOpt)
 	})
 
-	runGrpcServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
+	//runGrpcServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
 	// runGateWayServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
 	runGinServer(ctx, config, store, tokenMaker, logger, taskDistributor)
 	if err := waitGroup.Wait(); err != nil {

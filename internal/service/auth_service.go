@@ -103,7 +103,7 @@ func (a *authService) Signup(ctx *gin.Context, req auth_dto.SignupReq) (res auth
 }
 
 func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_dto.LoginRes, err error) {
-	user, err := a.store.GetUserByEmail(ctx, req.Email)
+	user, err := a.store.GetUserByEmail(ctx.Request.Context(), req.Email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			a.logger.Warn().Str("email", req.Email).Msg("User not found")

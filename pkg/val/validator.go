@@ -16,13 +16,13 @@ func ParseValidationErrorI18n(err error, lang string) map[string]string {
 			field := fe.Field()
 			msgID := "validation_" + fe.Tag()
 
-			result[field] = i18n.GetI18nMessageWithData(lang, msgID, map[string]interface{}{
+			result[field] = i18n.GetI18nMessageWithData(msgID, lang, map[string]interface{}{
 				"Field": field,
 				"Param": fe.Param(),
 			})
 		}
 	} else {
-		result["general"] = i18n.GetI18nMessage(lang, "validation_invalid")
+		result["general"] = i18n.GetI18nMessage("validation_invalid", lang)
 	}
 
 	return result

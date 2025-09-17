@@ -3,7 +3,7 @@ package token
 import (
 	"time"
 
-	err "github.com/MyProject273/Join_Love/pkg/error"
+	err "github.com/MyProject273/Join_Love/pkg/utils/error"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
