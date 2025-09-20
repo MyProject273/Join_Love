@@ -14,6 +14,7 @@ import (
 	"github.com/MyProject273/Join_Love/gapi/helper"
 	v1 "github.com/MyProject273/Join_Love/gapi/v1"
 
+	"github.com/MyProject273/Join_Love/internal/db/seed"
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
 	"github.com/MyProject273/Join_Love/internal/mail"
 	"github.com/MyProject273/Join_Love/internal/worker"
@@ -93,6 +94,8 @@ func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, toke
 	if err := i18n.LoadI18nMessages("pkg/i18n"); err != nil {
 		log.Fatal().Err(err).Msg("failed to load i18n")
 	}
+
+	seed.Seed(store, ctx)
 
 	return
 }

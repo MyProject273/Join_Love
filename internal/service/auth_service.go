@@ -130,7 +130,6 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 
 	accessToken, accessPayload, err := a.tokenMaker.CreateToken(
 		user.UserName,
-		user.Role,
 		a.config.AccessTokenDuration,
 		consts.TokenTypeAccessToken,
 	)
@@ -141,7 +140,6 @@ func (a *authService) Login(ctx *gin.Context, req auth_dto.LoginReq) (res auth_d
 
 	refreshToken, refreshPayload, err := a.tokenMaker.CreateToken(
 		user.UserName,
-		user.Role,
 		a.config.RefreshTokenDuration,
 		consts.TokenTypeRefreshToken,
 	)

@@ -10,45 +10,46 @@ import (
 
 type TokenType byte
 type Payload struct {
-	ID        uuid.UUID `json:"id"`
-	Type      TokenType `json:"token_type"`
-	UserID    string    `json:"user_id"`
-	Role      string    `json:"role"`
-	IssueAt   time.Time `json:"issue_at"`
-	ExpiredAt time.Time `json:"expired_at"`
+	ID          uuid.UUID `json:"id"`
+	Type        TokenType `json:"token_type"`
+	UserID      string    `json:"user_id"`
+	Role        string    `json:"role"`
+	Permissions []string  `json:"permissions"`
+	IssueAt     time.Time `json:"issue_at"`
+	ExpiredAt   time.Time `json:"expired_at"`
 }
 
 // GetAudience implements jwt.Claims.
 func (payload *Payload) GetAudience() (jwt.ClaimStrings, error) {
-	panic("unimplemented")
+	return nil, nil
 }
 
 // GetExpirationTime implements jwt.Claims.
 func (payload *Payload) GetExpirationTime() (*jwt.NumericDate, error) {
-	panic("unimplemented")
+	return jwt.NewNumericDate(payload.ExpiredAt), nil
 }
 
 // GetIssuedAt implements jwt.Claims.
 func (payload *Payload) GetIssuedAt() (*jwt.NumericDate, error) {
-	panic("unimplemented")
+	return jwt.NewNumericDate(payload.IssueAt), nil
 }
 
 // GetIssuer implements jwt.Claims.
 func (payload *Payload) GetIssuer() (string, error) {
-	panic("unimplemented")
+	return "Join_Love_Service", nil
 }
 
 // GetNotBefore implements jwt.Claims.
 func (payload *Payload) GetNotBefore() (*jwt.NumericDate, error) {
-	panic("unimplemented")
+	return jwt.NewNumericDate(payload.IssueAt), nil
 }
 
 // GetSubject implements jwt.Claims.
 func (payload *Payload) GetSubject() (string, error) {
-	panic("unimplemented")
+	return payload.UserID, nil
 }
 
-func NewPayload(user_id string, role string, duration time.Duration, tokenType TokenType) (*Payload, error) {
+func NewPayload(user_id string, duration time.Duration, tokenType TokenType) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -58,7 +59,6 @@ func NewPayload(user_id string, role string, duration time.Duration, tokenType T
 		ID:        tokenID,
 		Type:      tokenType,
 		UserID:    user_id,
-		Role:      role,
 		IssueAt:   time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}

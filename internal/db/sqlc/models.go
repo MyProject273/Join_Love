@@ -89,6 +89,11 @@ type Payment struct {
 	CreatedBy      pgtype.UUID      `json:"created_by"`
 }
 
+type Permission struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
 type Photo struct {
 	ID        pgtype.UUID      `json:"id"`
 	UserID    pgtype.UUID      `json:"user_id"`
@@ -123,6 +128,16 @@ type Report struct {
 	CreatedBy  pgtype.UUID      `json:"created_by"`
 }
 
+type Role struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+type RolePermission struct {
+	RoleID int64 `json:"role_id"`
+	PermID int64 `json:"perm_id"`
+}
+
 type Session struct {
 	ID           pgtype.UUID        `json:"id"`
 	UserID       pgtype.UUID        `json:"user_id"`
@@ -154,7 +169,6 @@ type User struct {
 	Email        string           `json:"email"`
 	Phone        *string          `json:"phone"`
 	PasswordHash string           `json:"password_hash"`
-	Role         string           `json:"role"`
 	FullName     *string          `json:"full_name"`
 	Gender       *string          `json:"gender"`
 	Birthdate    pgtype.Date      `json:"birthdate"`
@@ -222,6 +236,11 @@ type UserProfile struct {
 	UpdatedAt        pgtype.Timestamp `json:"updated_at"`
 	DeletedAt        pgtype.Timestamp `json:"deleted_at"`
 	CreatedBy        pgtype.UUID      `json:"created_by"`
+}
+
+type UserRole struct {
+	UserID pgtype.UUID `json:"user_id"`
+	RoleID int64       `json:"role_id"`
 }
 
 type VerifyEmail struct {

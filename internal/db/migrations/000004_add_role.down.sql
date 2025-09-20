@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS user_role;
+
+DROP TABLE IF EXISTS role_permission;
+
+DROP TABLE IF EXISTS permissions;
+
+DROP TABLE IF EXISTS roles;
+
+ALTER TABLE users
+    ADD COLUMN role VARCHAR NOT NULL DEFAULT 'user';
+

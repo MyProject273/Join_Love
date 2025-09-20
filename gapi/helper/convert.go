@@ -18,7 +18,6 @@ func ConvertUser(user1 *db.User) *user.User {
 		FullName:   user1.FullName,
 		Email:      user1.Email,
 		Phone:      user1.Phone,
-		Role:       user1.Role,
 		Gender:     user1.Gender,
 		Birthdate:  utils.PgDateToProtoTimestampSafe(user1.Birthdate),
 		Bio:        user1.Bio,
