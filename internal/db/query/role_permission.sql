@@ -39,6 +39,14 @@ SELECT id, name
 FROM permissions
 ORDER BY id;
 
+-- name: ListPermissionsByUser :many
+SELECT DISTINCT p.id, p.name
+FROM permissions p
+JOIN role_permission rp ON rp.perm_id = p.id
+JOIN user_role ur ON ur.role_id = rp.role_id
+WHERE ur.user_id = $1
+ORDER BY p.id;
+
 -- name: DeletePermission :exec
 DELETE FROM permissions
 WHERE id = $1;

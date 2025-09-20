@@ -15,5 +15,10 @@ const (
 	ForeignKeyViolation = "23503"
 	UniqueViolation     = "23505"
 
+	// Authorization
+	AuthorizationHeaderKey  = "authorization"
+	AuthorizationType       = "bearer"
+	AuthorizationPayloadKey = "authorization_payload"
+
 	Alphabet = "abcdefghijklmnopqrstuvwxyz"
 )

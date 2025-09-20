@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -110,4 +111,22 @@ func UUIDToPgUUIDSafe(u uuid.UUID) pgtype.UUID {
 		return pgtype.UUID{}
 	}
 	return pgUUID
+}
+
+// Strict version: string -> int64
+func StringToInt64(s string) (int64, error) {
+	val, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("StringToInt64: cannot parse %q: %w", s, err)
+	}
+	return val, nil
+}
+
+// Safe version: string -> int64, return 0 on error
+func StringToInt64Safe(s string) int64 {
+	val, err := StringToInt64(s)
+	if err != nil {
+		return 0
+	}
+	return val
 }

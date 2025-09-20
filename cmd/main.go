@@ -13,6 +13,7 @@ import (
 	_ "github.com/MyProject273/Join_Love/doc/statik"
 	"github.com/MyProject273/Join_Love/gapi/helper"
 	v1 "github.com/MyProject273/Join_Love/gapi/v1"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/MyProject273/Join_Love/internal/db/seed"
 	db "github.com/MyProject273/Join_Love/internal/db/sqlc"
@@ -45,7 +46,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
 	defer stop()
 
-	config, store, tokenMaker, logger, redisOpt, taskDistributor := initializeApp(ctx)
+	config, store, tokenMaker, logger, redisOpt, taskDistributor, redis := initializeApp(ctx)
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
 	waitGroup.Go(func() error {
@@ -54,7 +55,7 @@ func main() {
 
 	//runGrpcServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
 	// runGateWayServer(ctx, config, store, waitGroup, tokenMaker, logger, taskDistributor)
-	runGinServer(ctx, config, store, tokenMaker, logger, taskDistributor)
+	runGinServer(ctx, config, store, tokenMaker, logger, taskDistributor, redis)
 	if err := waitGroup.Wait(); err != nil {
 		log.Error().Err(err).Msg("application exited with error")
 	} else {
@@ -63,7 +64,7 @@ func main() {
 
 }
 
-func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, tokenMaker token.Maker, logger zerolog.Logger, redisOpt asynq.RedisClientOpt, taskDistributor worker.TaskDistributor) {
+func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, tokenMaker token.Maker, logger zerolog.Logger, redisOpt asynq.RedisClientOpt, taskDistributor worker.TaskDistributor, redisClient *redis.Client) {
 	var err error
 	cfg, err = config.LoadConfig(".")
 	if err != nil {
@@ -88,6 +89,15 @@ func initializeApp(ctx context.Context) (cfg config.Config, store db.Store, toke
 
 	redisOpt = asynq.RedisClientOpt{Addr: cfg.RedisAddress}
 	taskDistributor = worker.NewRedisTaskDistributor(redisOpt)
+
+	redisClient = redis.NewClient(&redis.Options{
+		Addr: cfg.RedisAddress,
+		DB:   0,
+	})
+
+	if err := redisClient.Ping(ctx).Err(); err != nil {
+		log.Fatal().Err(err).Msg("failed to connect to redis")
+	}
 
 	store = db.NewStore(connPool)
 
@@ -238,8 +248,9 @@ func runGinServer(
 	tokenMaker token.Maker,
 	logger zerolog.Logger,
 	taskDistributor worker.TaskDistributor,
+	redis *redis.Client,
 ) error {
-	server, err := api.NewServer(config, store, tokenMaker, logger, taskDistributor)
+	server, err := api.NewServer(config, store, tokenMaker, logger, taskDistributor, redis)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to create HTTP server")
 	}

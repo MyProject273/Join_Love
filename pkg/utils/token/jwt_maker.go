@@ -6,6 +6,7 @@ import (
 	"time"
 
 	errs "github.com/MyProject273/Join_Love/pkg/utils/error"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -23,7 +24,7 @@ func NewJWTMaker(secretKey string) (Maker, error) {
 	return &JWTMaker{secretKey}, nil
 }
 
-func (maker *JWTMaker) CreateToken(user_id string, duration time.Duration, tokenType TokenType) (string, *Payload, error) {
+func (maker *JWTMaker) CreateToken(user_id pgtype.UUID, duration time.Duration, tokenType TokenType) (string, *Payload, error) {
 	payload, err := NewPayload(user_id, duration, tokenType)
 	if err != nil {
 		return "", payload, err

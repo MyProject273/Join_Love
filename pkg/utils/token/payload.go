@@ -6,17 +6,16 @@ import (
 	err "github.com/MyProject273/Join_Love/pkg/utils/error"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type TokenType byte
 type Payload struct {
-	ID          uuid.UUID `json:"id"`
-	Type        TokenType `json:"token_type"`
-	UserID      string    `json:"user_id"`
-	Role        string    `json:"role"`
-	Permissions []string  `json:"permissions"`
-	IssueAt     time.Time `json:"issue_at"`
-	ExpiredAt   time.Time `json:"expired_at"`
+	ID        uuid.UUID `json:"id"`
+	Type      TokenType `json:"token_type"`
+	UserID    pgtype.UUID `json:"user_id"`
+	IssueAt   time.Time `json:"issue_at"`
+	ExpiredAt time.Time `json:"expired_at"`
 }
 
 // GetAudience implements jwt.Claims.
@@ -46,10 +45,10 @@ func (payload *Payload) GetNotBefore() (*jwt.NumericDate, error) {
 
 // GetSubject implements jwt.Claims.
 func (payload *Payload) GetSubject() (string, error) {
-	return payload.UserID, nil
+	return payload.UserID.String(), nil
 }
 
-func NewPayload(user_id string, duration time.Duration, tokenType TokenType) (*Payload, error) {
+func NewPayload(user_id pgtype.UUID, duration time.Duration, tokenType TokenType) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err

@@ -34,6 +34,7 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	ListPermissions(ctx context.Context) ([]Permission, error)
 	ListPermissionsByRole(ctx context.Context, roleID int64) ([]Permission, error)
+	ListPermissionsByUser(ctx context.Context, userID pgtype.UUID) ([]Permission, error)
 	ListRoles(ctx context.Context) ([]Role, error)
 	ListRolesByUser(ctx context.Context, userID pgtype.UUID) ([]Role, error)
 	RemovePermissionFromRole(ctx context.Context, arg RemovePermissionFromRoleParams) error

@@ -67,25 +67,24 @@ func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (*auth.L
 		return nil, status.Errorf(codes.NotFound, "%s", i18n.GetI18nMessage("incorrect_password", lang))
 	}
 
-	userID, err := utils.PgUUIDToString(user.ID)
 	if err != nil {
 		a.logger.Error().Err(err).Msg("failed to convert UUID to string")
 		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	accessToken, accessPayload, err := a.tokenMaker.CreateToken(
-		userID, user.Role, a.config.AccessTokenDuration, consts.TokenTypeAccessToken,
+		user.ID, a.config.AccessTokenDuration, consts.TokenTypeAccessToken,
 	)
 	if err != nil {
-		a.logger.Error().Err(err).Str("user_id", userID).Msg("failed to create access token")
+		a.logger.Error().Err(err).Str("user_id", user.ID.String()).Msg("failed to create access token")
 		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
 	refreshToken, refreshPayload, err := a.tokenMaker.CreateToken(
-		userID, user.Role, a.config.RefreshTokenDuration, consts.TokenTypeRefreshToken,
+		user.ID, a.config.RefreshTokenDuration, consts.TokenTypeRefreshToken,
 	)
 	if err != nil {
-		a.logger.Error().Err(err).Str("user_id", userID).Msg("failed to create refresh token")
+		a.logger.Error().Err(err).Str("user_id", user.ID.String()).Msg("failed to create refresh token")
 		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
@@ -95,11 +94,11 @@ func (a *AuthServer) Login(ctx context.Context, req *auth.LoginRequest) (*auth.L
 	})
 
 	if err != nil {
-		a.logger.Error().Err(err).Str("user_id", userID).Msg("failed to update last login")
+		a.logger.Error().Err(err).Str("user_id", user.ID.String()).Msg("failed to update last login")
 		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("internal_error", lang))
 	}
 
-	a.logger.Info().Str("user_id", userID).Msg("user logged in successfully")
+	a.logger.Info().Str("user_id", user.ID.String()).Msg("user logged in successfully")
 
 	return &auth.LoginResponse{
 		User:                  helper.ConvertUser(&user),
@@ -198,8 +197,8 @@ func (a *AuthServer) VerifyEmail(ctx context.Context, req *auth.VerifyEmailReque
 	}
 
 	txResult, err := a.store.VerifyEmailTx(ctx, db.VerifyEmailTxParams{
-		VerifyEmailId:    req.EmailId,
-		SecretCode: req.SecretCode,
+		VerifyEmailId: req.EmailId,
+		SecretCode:    req.SecretCode,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%s", i18n.GetI18nMessage("verify_email", lang))
