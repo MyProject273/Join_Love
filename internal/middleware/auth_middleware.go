@@ -61,7 +61,6 @@ func AuthMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			Str("token_id", payload.ID.String()).
 			Msg("token verified successfully")
 
-		// Lưu payload vào context với key chuẩn
 		ctx.Set(consts.AuthorizationPayloadKey, payload)
 		ctx.Next()
 	}
@@ -110,5 +109,36 @@ func RequirePermission(permission string, redisClient *redis.Client, store db.St
 		}
 
 		helper.AbortWithErrorResponse(ctx, rescode.PermissionDenied, errors.New("permission denied"))
+	}
+}
+
+func CheckOwnerMiddleware(store db.Store, isAdminFunc func(userID string) bool, paramKey string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		payloadRaw, exists := ctx.Get(consts.AuthorizationPayloadKey)
+		if !exists {
+			helper.AbortWithErrorResponse(ctx, rescode.UnAuthorized, errors.New("missing token payload"))
+			return
+		}
+
+		claims := payloadRaw.(*token.Payload)
+		currentUserID := claims.UserID.String()
+
+		targetUserID := ctx.Param(paramKey)
+		if targetUserID == "" {
+			helper.AbortWithErrorResponse(ctx, rescode.Invalid, errors.New("missing target user id in path"))
+			return
+		}
+
+		if isAdminFunc(currentUserID) {
+			ctx.Next()
+			return
+		}
+
+		if currentUserID != targetUserID {
+			helper.AbortWithErrorResponse(ctx, rescode.PermissionDenied, errors.New("permission denied"))
+			return
+		}
+
+		ctx.Next()
 	}
 }
