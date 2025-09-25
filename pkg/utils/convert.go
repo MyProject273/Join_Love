@@ -130,3 +130,50 @@ func StringToInt64Safe(s string) int64 {
 	}
 	return val
 }
+
+// Strict version: pgtype.Date -> "YYYY-MM-DD"
+func PgDateToString(pgDate pgtype.Date) (string, error) {
+	t, err := pgDate.Value()
+	if err != nil {
+		return "", fmt.Errorf("PgDateToString: cannot get value: %w", err)
+	}
+	tm, ok := t.(time.Time)
+	if !ok {
+		return "", fmt.Errorf("PgDateToString: unexpected type %T", t)
+	}
+	return tm.Format("2006-01-02"), nil
+}
+
+// Safe version: ignore error, return "" on fail
+func PgDateToStringSafe(pgDate pgtype.Date) string {
+	s, err := PgDateToString(pgDate)
+	if err != nil {
+		return ""
+	}
+	return s
+}
+
+// Strict version: string -> pgtype.Date
+func StringToPgDate(s string) (pgtype.Date, error) {
+	if s == "" {
+		return pgtype.Date{}, fmt.Errorf("StringToPgDate: empty string")
+	}
+
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return pgtype.Date{}, fmt.Errorf("StringToPgDate: cannot parse %q: %w", s, err)
+	}
+
+	return pgtype.Date{
+		Time: t,
+	}, nil
+}
+
+// Safe version: ignore error, return zero value on fail
+func StringToPgDateSafe(s string) pgtype.Date {
+	d, err := StringToPgDate(s)
+	if err != nil {
+		return pgtype.Date{} // Status == Null
+	}
+	return d
+}
