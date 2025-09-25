@@ -46,7 +46,6 @@ func Seed(store db.Store, ctx context.Context) {
 		log.Fatalf("failed to get role %q: %v", adminRole, err)
 	}
 
-	// Gán role admin cho user vừa tạo
 	if err := store.AssignRoleToUser(ctx, db.AssignRoleToUserParams{
 		UserID: admin.ID,
 		RoleID: role.ID,
