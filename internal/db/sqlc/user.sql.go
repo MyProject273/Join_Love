@@ -33,7 +33,7 @@ INSERT INTO users (
 ) VALUES (
     $1,$2,$3
 )
-RETURNING id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
+RETURNING id, user_name, email, phone, password_hash, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
 `
 
 type CreateUserParams struct {
@@ -51,7 +51,76 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Email,
 		&i.Phone,
 		&i.PasswordHash,
-		&i.Role,
+		&i.FullName,
+		&i.Gender,
+		&i.Birthdate,
+		&i.AvatarUrl,
+		&i.Bio,
+		&i.IsActive,
+		&i.IsVerified,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.CreatedBy,
+	)
+	return i, err
+}
+
+const createUserByAdmin = `-- name: CreateUserByAdmin :one
+INSERT INTO users (
+    email,
+    password_hash,
+    user_name,
+    phone,
+    full_name,
+    gender,
+    birthdate,
+    avatar_url,
+    bio,
+    is_active,
+    is_verified
+) VALUES (
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+)
+RETURNING id, user_name, email, phone, password_hash, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
+`
+
+type CreateUserByAdminParams struct {
+	Email        string      `json:"email"`
+	PasswordHash string      `json:"password_hash"`
+	UserName     string      `json:"user_name"`
+	Phone        *string     `json:"phone"`
+	FullName     *string     `json:"full_name"`
+	Gender       *string     `json:"gender"`
+	Birthdate    pgtype.Date `json:"birthdate"`
+	AvatarUrl    *string     `json:"avatar_url"`
+	Bio          *string     `json:"bio"`
+	IsActive     bool        `json:"is_active"`
+	IsVerified   bool        `json:"is_verified"`
+}
+
+func (q *Queries) CreateUserByAdmin(ctx context.Context, arg CreateUserByAdminParams) (User, error) {
+	row := q.db.QueryRow(ctx, createUserByAdmin,
+		arg.Email,
+		arg.PasswordHash,
+		arg.UserName,
+		arg.Phone,
+		arg.FullName,
+		arg.Gender,
+		arg.Birthdate,
+		arg.AvatarUrl,
+		arg.Bio,
+		arg.IsActive,
+		arg.IsVerified,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.UserName,
+		&i.Email,
+		&i.Phone,
+		&i.PasswordHash,
 		&i.FullName,
 		&i.Gender,
 		&i.Birthdate,
@@ -70,7 +139,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 
 const deleteUser = `-- name: DeleteUser :exec
 UPDATE users
-SET deleted_at = now()
+SET deleted_at = now(),
+    is_active = false
 WHERE id = $1
 `
 
@@ -80,7 +150,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getListUser = `-- name: GetListUser :many
-SELECT id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by FROM  users 
+SELECT id, user_name, email, phone, password_hash, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by FROM  users 
 LIMIT $1
 OFFSET $2
 `
@@ -105,7 +175,6 @@ func (q *Queries) GetListUser(ctx context.Context, arg GetListUserParams) ([]Use
 			&i.Email,
 			&i.Phone,
 			&i.PasswordHash,
-			&i.Role,
 			&i.FullName,
 			&i.Gender,
 			&i.Birthdate,
@@ -130,7 +199,7 @@ func (q *Queries) GetListUser(ctx context.Context, arg GetListUserParams) ([]Use
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by FROM users
+SELECT id, user_name, email, phone, password_hash, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by FROM users
 WHERE id = $1
 `
 
@@ -143,7 +212,6 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 		&i.Email,
 		&i.Phone,
 		&i.PasswordHash,
-		&i.Role,
 		&i.FullName,
 		&i.Gender,
 		&i.Birthdate,
@@ -161,7 +229,7 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by FROM users
+SELECT id, user_name, email, phone, password_hash, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by FROM users
 WHERE email = $1 LIMIT 1
 `
 
@@ -174,7 +242,6 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Email,
 		&i.Phone,
 		&i.PasswordHash,
-		&i.Role,
 		&i.FullName,
 		&i.Gender,
 		&i.Birthdate,
@@ -199,20 +266,24 @@ SET user_name = COALESCE($1, user_name),
     gender = COALESCE($4, gender),
     birthdate = COALESCE($5, birthdate),
     avatar_url = COALESCE($6, avatar_url),
-    bio = COALESCE($7, bio)
-WHERE id = $8
-RETURNING id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
+    bio = COALESCE($7, bio),
+    is_active = COALESCE($8, is_active),
+    is_verified = COALESCE($9, is_verified)
+WHERE id = $10
+RETURNING id, user_name, email, phone, password_hash, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
 `
 
 type UpdateUserParams struct {
-	UserName  *string     `json:"user_name"`
-	Phone     *string     `json:"phone"`
-	FullName  *string     `json:"full_name"`
-	Gender    *string     `json:"gender"`
-	Birthdate pgtype.Date `json:"birthdate"`
-	AvatarUrl *string     `json:"avatar_url"`
-	Bio       *string     `json:"bio"`
-	ID        pgtype.UUID `json:"id"`
+	UserName   *string     `json:"user_name"`
+	Phone      *string     `json:"phone"`
+	FullName   *string     `json:"full_name"`
+	Gender     *string     `json:"gender"`
+	Birthdate  pgtype.Date `json:"birthdate"`
+	AvatarUrl  *string     `json:"avatar_url"`
+	Bio        *string     `json:"bio"`
+	IsActive   *bool       `json:"is_active"`
+	IsVerified *bool       `json:"is_verified"`
+	ID         pgtype.UUID `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -224,6 +295,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Birthdate,
 		arg.AvatarUrl,
 		arg.Bio,
+		arg.IsActive,
+		arg.IsVerified,
 		arg.ID,
 	)
 	var i User
@@ -233,7 +306,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Email,
 		&i.Phone,
 		&i.PasswordHash,
-		&i.Role,
 		&i.FullName,
 		&i.Gender,
 		&i.Birthdate,
@@ -254,7 +326,7 @@ const updateUserActiveStatus = `-- name: UpdateUserActiveStatus :one
 UPDATE users
 SET is_active = $1
 WHERE id = $2
-RETURNING id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
+RETURNING id, user_name, email, phone, password_hash, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
 `
 
 type UpdateUserActiveStatusParams struct {
@@ -271,7 +343,6 @@ func (q *Queries) UpdateUserActiveStatus(ctx context.Context, arg UpdateUserActi
 		&i.Email,
 		&i.Phone,
 		&i.PasswordHash,
-		&i.Role,
 		&i.FullName,
 		&i.Gender,
 		&i.Birthdate,
@@ -308,7 +379,7 @@ const updateUserVerifiedStatus = `-- name: UpdateUserVerifiedStatus :one
 UPDATE users
 SET is_verified = $1
 WHERE id = $2
-RETURNING id, user_name, email, phone, password_hash, role, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
+RETURNING id, user_name, email, phone, password_hash, full_name, gender, birthdate, avatar_url, bio, is_active, is_verified, last_login, created_at, updated_at, deleted_at, created_by
 `
 
 type UpdateUserVerifiedStatusParams struct {
@@ -325,7 +396,6 @@ func (q *Queries) UpdateUserVerifiedStatus(ctx context.Context, arg UpdateUserVe
 		&i.Email,
 		&i.Phone,
 		&i.PasswordHash,
-		&i.Role,
 		&i.FullName,
 		&i.Gender,
 		&i.Birthdate,

@@ -12,7 +12,6 @@ import (
 )
 
 const assignPermissionToRole = `-- name: AssignPermissionToRole :exec
-
 INSERT INTO role_permission (role_id, perm_id)
 VALUES ($1, $2)
 ON CONFLICT DO NOTHING
@@ -23,14 +22,12 @@ type AssignPermissionToRoleParams struct {
 	PermID int64 `json:"perm_id"`
 }
 
-// ===============================
 func (q *Queries) AssignPermissionToRole(ctx context.Context, arg AssignPermissionToRoleParams) error {
 	_, err := q.db.Exec(ctx, assignPermissionToRole, arg.RoleID, arg.PermID)
 	return err
 }
 
 const assignRoleToUser = `-- name: AssignRoleToUser :exec
-
 INSERT INTO user_role (user_id, role_id)
 VALUES ($1, $2)
 ON CONFLICT DO NOTHING
@@ -41,20 +38,17 @@ type AssignRoleToUserParams struct {
 	RoleID int64       `json:"role_id"`
 }
 
-// ===============================
 func (q *Queries) AssignRoleToUser(ctx context.Context, arg AssignRoleToUserParams) error {
 	_, err := q.db.Exec(ctx, assignRoleToUser, arg.UserID, arg.RoleID)
 	return err
 }
 
 const createPermission = `-- name: CreatePermission :one
-
 INSERT INTO permissions (name)
 VALUES ($1)
 RETURNING id, name
 `
 
-// ===============================
 func (q *Queries) CreatePermission(ctx context.Context, name string) (Permission, error) {
 	row := q.db.QueryRow(ctx, createPermission, name)
 	var i Permission
@@ -267,6 +261,16 @@ func (q *Queries) ListRolesByUser(ctx context.Context, userID pgtype.UUID) ([]Ro
 		return nil, err
 	}
 	return items, nil
+}
+
+const removeAllRoleFromUser = `-- name: RemoveAllRoleFromUser :exec
+DELETE FROM user_role
+WHERE user_id = $1
+`
+
+func (q *Queries) RemoveAllRoleFromUser(ctx context.Context, userID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, removeAllRoleFromUser, userID)
+	return err
 }
 
 const removePermissionFromRole = `-- name: RemovePermissionFromRole :exec

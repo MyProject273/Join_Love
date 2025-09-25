@@ -10,10 +10,11 @@ import (
 
 type Services struct {
 	AuthService AuthService
+	UserService UserService
 }
-
 func NewServices(store db.Store, config config.Config, tokenMaker token.Maker, taskDistributor worker.TaskDistributor, logger zerolog.Logger) *Services {
 	return &Services{
 		AuthService: NewAuthService(store, config, tokenMaker, taskDistributor, logger),
+		UserService: NewUserService(store, logger),
 	}
 }

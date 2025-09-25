@@ -11,16 +11,14 @@ import (
 )
 
 type Querier interface {
-	// ===============================
 	AssignPermissionToRole(ctx context.Context, arg AssignPermissionToRoleParams) error
-	// ===============================
 	AssignRoleToUser(ctx context.Context, arg AssignRoleToUserParams) error
 	CheckUserVerified(ctx context.Context, id pgtype.UUID) (bool, error)
-	// ===============================
 	CreatePermission(ctx context.Context, name string) (Permission, error)
 	CreateRole(ctx context.Context, name string) (Role, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateUserByAdmin(ctx context.Context, arg CreateUserByAdminParams) (User, error)
 	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	DeletePermission(ctx context.Context, id int64) error
 	DeleteRole(ctx context.Context, id int64) error
@@ -37,6 +35,7 @@ type Querier interface {
 	ListPermissionsByUser(ctx context.Context, userID pgtype.UUID) ([]Permission, error)
 	ListRoles(ctx context.Context) ([]Role, error)
 	ListRolesByUser(ctx context.Context, userID pgtype.UUID) ([]Role, error)
+	RemoveAllRoleFromUser(ctx context.Context, userID pgtype.UUID) error
 	RemovePermissionFromRole(ctx context.Context, arg RemovePermissionFromRoleParams) error
 	RemoveRoleFromUser(ctx context.Context, arg RemoveRoleFromUserParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

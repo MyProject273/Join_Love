@@ -22,7 +22,6 @@ ORDER BY id;
 DELETE FROM roles
 WHERE id = $1;
 
--- ===============================
 
 -- name: CreatePermission :one
 INSERT INTO permissions (name)
@@ -51,7 +50,6 @@ ORDER BY p.id;
 DELETE FROM permissions
 WHERE id = $1;
 
--- ===============================
 
 -- name: AssignPermissionToRole :exec
 INSERT INTO role_permission (role_id, perm_id)
@@ -68,7 +66,6 @@ FROM permissions p
 JOIN role_permission rp ON rp.perm_id = p.id
 WHERE rp.role_id = $1;
 
--- ===============================
 
 -- name: AssignRoleToUser :exec
 INSERT INTO user_role (user_id, role_id)
@@ -78,6 +75,10 @@ ON CONFLICT DO NOTHING;
 -- name: RemoveRoleFromUser :exec
 DELETE FROM user_role
 WHERE user_id = $1 AND role_id = $2;
+
+-- name: RemoveAllRoleFromUser :exec
+DELETE FROM user_role
+WHERE user_id = $1;
 
 -- name: ListRolesByUser :many
 SELECT r.id, r.name

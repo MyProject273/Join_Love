@@ -8,6 +8,24 @@ INSERT INTO users (
 )
 RETURNING *;
 
+-- name: CreateUserByAdmin :one
+INSERT INTO users (
+    email,
+    password_hash,
+    user_name,
+    phone,
+    full_name,
+    gender,
+    birthdate,
+    avatar_url,
+    bio,
+    is_active,
+    is_verified
+) VALUES (
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+)
+RETURNING *;
+
 
 -- name: GetListUser :many
 SELECT * FROM  users 
@@ -24,7 +42,8 @@ WHERE email = $1 LIMIT 1 ;
 
 -- name: DeleteUser :exec
 UPDATE users
-SET deleted_at = now()
+SET deleted_at = now(),
+    is_active = false
 WHERE id = $1 ;
 
 -- name: UpdateUser :one
@@ -35,7 +54,9 @@ SET user_name = COALESCE(sqlc.narg(user_name), user_name),
     gender = COALESCE(sqlc.narg(gender), gender),
     birthdate = COALESCE(sqlc.narg(birthdate), birthdate),
     avatar_url = COALESCE(sqlc.narg(avatar_url), avatar_url),
-    bio = COALESCE(sqlc.narg(bio), bio)
+    bio = COALESCE(sqlc.narg(bio), bio),
+    is_active = COALESCE(sqlc.narg(is_active), is_active),
+    is_verified = COALESCE(sqlc.narg(is_verified), is_verified)
 WHERE id = sqlc.arg(id)
 RETURNING *;
 

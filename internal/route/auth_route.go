@@ -10,3 +10,5 @@ func RegisterAuthRoutes(r *gin.RouterGroup, h v1.AuthHandler) {
 	r.POST("/signup", h.Signup)
 	r.GET("/verify_email", h.VerifyEmail)
 }
+
+
